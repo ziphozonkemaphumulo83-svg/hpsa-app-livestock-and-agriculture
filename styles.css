@@ -16,25 +16,26 @@ body {
   min-height: 100vh;
   padding: 20px;
   color: #1e1e1e;
-  transition: background 0.3s ease;
+  transition: background 0.4s ease, color 0.4s ease;
 }
 
 /* App Container */
 .container {
-  background-color: white;
+  background-color: #fdfdfd; /* slightly off-white for better contrast */
   padding: 32px;
   border-radius: 20px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
   width: 100%;
   max-width: 440px;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.4s ease, transform 0.3s ease;
 }
 
 .container:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 45px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
 }
 
-/* Screens (login/welcome) */
+/* Screens */
 .screen {
   display: none;
   flex-direction: column;
@@ -45,7 +46,7 @@ body {
   padding: 24px;
   background: transparent;
   text-align: center;
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .screen.show {
@@ -54,6 +55,7 @@ body {
   transform: translateY(0);
 }
 
+/* Splash logo */
 .splash-logo {
   width: 100px;
   height: 100px;
@@ -66,7 +68,7 @@ body {
   align-items: center;
   justify-content: center;
   animation: spin 4s linear infinite;
-  box-shadow: 0 0 20px rgba(30, 42, 56, 0.6);
+  box-shadow: 0 0 24px rgba(30, 42, 56, 0.65);
   margin-bottom: 20px;
 }
 
@@ -89,8 +91,10 @@ body {
   background: linear-gradient(135deg, #1e2a38, #344054);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: all 0.3s ease;
 }
 
+/* Section Titles */
 .section-title {
   font-size: 20px;
   font-weight: 700;
@@ -101,19 +105,20 @@ body {
   padding-bottom: 6px;
 }
 
-/* Forms */
+/* Cards & Forms */
 .card {
   width: 100%;
-  background: #fff;
+  background: #fdfdfd;
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+  box-shadow: 0 0 15px rgba(0,0,0,0.06);
   margin-bottom: 20px;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .card:hover {
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
 }
 
 .form-group {
@@ -129,20 +134,21 @@ label {
   color: #333;
 }
 
-input, select {
+input, select, textarea {
   padding: 12px;
   font-size: 15px;
   border: 1px solid #cfd8dc;
   border-radius: 12px;
-  background-color: #f8f9fa;
+  background-color: #f4f6f8; /* slightly greyish for contrast */
   color: #1e1e1e;
-  transition: border 0.2s ease, background 0.2s ease;
+  transition: border 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
   border-color: #1e2a38;
   outline: none;
   background-color: #fff;
+  color: #1e1e1e;
 }
 
 /* Password toggle */
@@ -176,7 +182,7 @@ button, .btn-small, .primary-btn {
   padding: 14px;
   font-size: 16px;
   font-weight: bold;
-  background-color: #1e2a38;
+  background-color: #5d4037; /* stronger brown for better theme */
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -188,7 +194,7 @@ button, .btn-small, .primary-btn {
 button:hover,
 .btn-small:hover,
 .primary-btn:hover {
-  background-color: #344054;
+  background-color: #3e2723;
   transform: translateY(-1px);
 }
 
@@ -200,9 +206,9 @@ button:hover,
   margin-top: 20px;
 }
 
-/* Link Texts */
+/* Links */
 .link {
-  color: #0056b3;
+  color: #5d4037;
   cursor: pointer;
   text-align: center;
   margin-top: 10px;
@@ -213,13 +219,7 @@ button:hover,
 }
 
 .link:hover {
-  color: #003366;
-}
-
-.switch {
-  text-align: center;
-  margin-top: 14px;
-  font-size: 14px;
+  color: #3e2723;
 }
 
 /* Toasts */
@@ -228,7 +228,7 @@ button:hover,
   bottom: 30px;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: #1e2a38;
+  background: #5d4037;
   color: #fff;
   padding: 12px 24px;
   border-radius: 10px;
@@ -257,7 +257,7 @@ button:hover,
   align-items: center;
   z-index: 1000;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
 }
 
 .modal.show {
@@ -266,15 +266,15 @@ button:hover,
 }
 
 .modal-content {
-  background: #fff;
+  background: #fdfdfd;
   padding: 24px;
   border-radius: 14px;
   text-align: center;
   width: 90%;
   max-width: 320px;
   color: #1e1e1e;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-  transition: transform 0.3s ease;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+  transition: transform 0.4s ease;
 }
 
 .modal-content input {
@@ -283,22 +283,13 @@ button:hover,
   margin-bottom: 14px;
   border: 1px solid #ccc;
   border-radius: 10px;
-  transition: border 0.2s ease;
+  background: #f4f6f8; /* restored visible background */
+  color: #1e1e1e;
 }
 
 .modal-content input:focus {
   border-color: #1e2a38;
-  outline: none;
-}
-
-.modal-content button {
-  background: #1e2a38;
-  margin-top: 6px;
-  transition: background 0.3s ease;
-}
-
-.modal-content button:hover {
-  background: #344054;
+  background: #fff;
 }
 
 /* Utility */
@@ -308,25 +299,9 @@ button:hover,
 
 /* Responsive */
 @media (max-width: 480px) {
-  body {
-    padding: 10px;
-    align-items: flex-start;
-  }
-
-  .container {
-    padding: 20px;
-  }
-
-  .glow-text, .app-title {
-    font-size: 24px;
-  }
-
-  button, .btn-small {
-    font-size: 14px;
-    padding: 12px;
-  }
-
-  .form-group input, select {
-    font-size: 14px;
-  }
+  body { padding: 10px; align-items: flex-start; }
+  .container { padding: 20px; }
+  .glow-text, .app-title { font-size: 24px; }
+  button, .btn-small { font-size: 14px; padding: 12px; }
+  .form-group input, select, textarea { font-size: 14px; }
 }
