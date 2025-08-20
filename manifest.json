@@ -33,5 +33,9 @@
     { "src": "screenshots/2.png", "sizes": "540x720", "type": "image/png" },
     { "src": "screenshots/3.png", "sizes": "540x720", "type": "image/png" }
   ],
-  "scope_extensions": ["./pages/", "./forms/"]
+  "scope_extensions": [
+    "https://ziphozonkemaphumulo83-svg.github.io/hpsa-app-livestock-and-agriculture/pages/",
+    "https://ziphozonkemaphumulo83-svg.github.io/hpsa-app-livestock-and-agriculture/forms/"
+  ]
 }
+
