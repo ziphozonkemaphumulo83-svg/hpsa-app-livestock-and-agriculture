@@ -1,46 +1,49 @@
-const CACHE_NAME = "hpsa-cache-v1";
+// service-worker.js
+import { precacheAndRoute } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js';
+import { registerRoute } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-routing.prod.js';
+import { NetworkFirst, StaleWhileRevalidate } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-strategies.prod.js';
 
-// List of files to cache
-const urlsToCache = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/sensus.html",
-  "/sensus-household.html",
-  "/sensus-report.html",
-  "/sales.html",
-  "/sales-report.html"
-  "/script.js"
-  "/zongo.png"
-  // Add any extra JS/CSS/images your app needs offline
-];
+// Precache offline page and other assets
+precacheAndRoute([
+  { url: 'offline.html', revision: '1' },
+  { url: 'index.html', revision: '1' },
+  { url: 'styles.css', revision: '1' },   // Add your CSS/JS/assets here
+  { url: 'icons/icon-192.png', revision: '1' },
+  { url: 'icons/icon-512.png', revision: '1' }
+]);
 
-// Install SW and cache files
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
-  );
+// Cache navigation requests with NetworkFirst strategy
+registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new NetworkFirst({
+    cacheName: 'pages-cache',
+    plugins: []
+  })
+);
+
+// Cache CSS, JS, and images with StaleWhileRevalidate
+registerRoute(
+  ({ request }) =>
+    request.destination === 'style' ||
+    request.destination === 'script' ||
+    request.destination === 'image',
+  new StaleWhileRevalidate({
+    cacheName: 'assets-cache'
+  })
+);
+
+// Fallback to offline page if navigation fails
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('offline.html'))
+    );
+  }
 });
 
-// Serve from cache
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
-  );
-});
-
-// Update cache when new version is deployed
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
-      );
-    })
-  );
+// Skip waiting on new SW
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
