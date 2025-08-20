@@ -13,6 +13,7 @@ precacheAndRoute([
   { url: 'index.html', revision: '1' },
   { url: 'sales-summary.html', revision: '1' },
   { url: 'sales-report.html', revision: '1' },
+  { url: 'census.html', revision: '1' },
   { url: 'sensus.html', revision: '1' },
   { url: 'sensus-household.html', revision: '1' },
   { url: 'sensus-report.html', revision: '1' },
@@ -23,12 +24,13 @@ precacheAndRoute([
 ]);
 
 // -----------------------------
-// Cache navigation requests (pages)
+// Navigation caching with proper fallback
 // -----------------------------
 registerRoute(
   ({ request }) => request.mode === 'navigate',
   new NetworkFirst({
     cacheName: 'pages-cache',
+    networkTimeoutSeconds: 5,
     plugins: [
       new CacheableResponsePlugin({ statuses: [0, 200] })
     ]
@@ -36,7 +38,7 @@ registerRoute(
 );
 
 // -----------------------------
-// Cache CSS, JS, images
+// Cache assets (CSS, JS, Images)
 // -----------------------------
 registerRoute(
   ({ request }) =>
@@ -46,7 +48,7 @@ registerRoute(
   new StaleWhileRevalidate({
     cacheName: 'assets-cache',
     plugins: [
-      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 7 * 24 * 60 * 60 }), // 7 days
+      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 7 * 24 * 60 * 60 }),
       new CacheableResponsePlugin({ statuses: [0, 200] })
     ]
   })
@@ -58,12 +60,26 @@ registerRoute(
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open('pages-cache');
-        // Try to return the requested page from cache
-        const cachedResponse = await cache.match(event.request);
-        return cachedResponse || caches.match('offline.html');
-      })
+      fetch(event.request)
+        .then((response) => {
+          if (!response || response.status !== 200) {
+            throw new Error('Network response invalid');
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cache = await caches.open('pages-cache');
+
+          // Use the cached version of the requested URL
+          const cachedResponse = await cache.match(event.request.url);
+          if (cachedResponse) return cachedResponse;
+
+          // Try matching by filename only (fallback for relative navigation)
+          const urlParts = event.request.url.split('/');
+          const filename = urlParts[urlParts.length - 1];
+          const fallback = await cache.match(filename);
+          return fallback || caches.match('offline.html');
+        })
     );
   }
 });
@@ -80,7 +96,7 @@ self.addEventListener('sync', (event) => {
 async function syncFormsToServer() {
   try {
     console.log('[SW] Syncing forms to server...');
-    // TODO: Implement IndexedDB retrieval & submission logic
+    // TODO: IndexedDB submission logic
   } catch (err) {
     console.error('[SW] Form sync failed:', err);
   }
@@ -98,7 +114,7 @@ self.addEventListener('periodicsync', (event) => {
 async function fetchLatestData() {
   try {
     console.log('[SW] Fetching latest data...');
-    // TODO: Implement latest data caching
+    // TODO: implement caching logic
   } catch (err) {
     console.error('[SW] Periodic fetch failed:', err);
   }
