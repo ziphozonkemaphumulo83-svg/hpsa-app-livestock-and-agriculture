@@ -259,10 +259,8 @@ window.sendPasswordReset=()=>{
 window.showLogin=showLogin; window.showRegister=showRegister;
 
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js")
-    .then(() => console.log("Service Worker registered"))
-    .catch(err => console.log("SW registration failed:", err));
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
 }
 
 </script>
