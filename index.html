@@ -260,11 +260,10 @@ window.showLogin=showLogin; window.showRegister=showRegister;
 
 
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js")
+  navigator.serviceWorker.register("service-worker.js")
     .then(() => console.log("Service Worker registered"))
-    .catch(err => console.error("SW registration failed:", err));
+    .catch(err => console.log("SW registration failed:", err));
 }
-
 
 </script>
 </body>
