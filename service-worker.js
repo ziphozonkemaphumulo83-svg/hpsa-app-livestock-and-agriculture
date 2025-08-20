@@ -3,11 +3,11 @@ import { precacheAndRoute } from 'https://storage.googleapis.com/workbox-cdn/rel
 import { registerRoute } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-routing.prod.js';
 import { NetworkFirst, StaleWhileRevalidate } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-strategies.prod.js';
 
-// Precache offline page and other assets
+// Precache offline page and essential assets
 precacheAndRoute([
   { url: 'offline.html', revision: '1' },
   { url: 'index.html', revision: '1' },
-  { url: 'styles.css', revision: '1' },   // Add your CSS/JS/assets here
+  { url: 'styles.css', revision: '1' },
   { url: 'icons/icon-192.png', revision: '1' },
   { url: 'icons/icon-512.png', revision: '1' }
 ]);
@@ -16,12 +16,11 @@ precacheAndRoute([
 registerRoute(
   ({ request }) => request.mode === 'navigate',
   new NetworkFirst({
-    cacheName: 'pages-cache',
-    plugins: []
+    cacheName: 'pages-cache'
   })
 );
 
-// Cache CSS, JS, and images with StaleWhileRevalidate
+// Cache CSS, JS, images with StaleWhileRevalidate strategy
 registerRoute(
   ({ request }) =>
     request.destination === 'style' ||
