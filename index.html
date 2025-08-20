@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#774936">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HPSA App</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Basic Styles & Layouts */
+    body { margin:0; font-family:'Uber Move',sans-serif; background:#000; color:#fff; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; overflow-x:hidden; padding-top:20px; }
+    .screen { position:absolute; top:0; left:0; width:100%; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#000; padding:20px; text-align:center; opacity:0; transform:translateY(30px); pointer-events:none; transition:opacity 0.5s, transform 0.5s; }
+    .screen.show { opacity:1; transform:translateY(0); pointer-events:auto; z-index:2; }
+    .splash-logo { width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#774936,#000);display:flex;justify-content:center;align-items:center;font-size:40px;font-weight:bold;color:#fff;animation:spin 4s linear infinite;box-shadow:0 0 20px rgba(119,73,54,0.8); }
+    @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    #homeWelcome { max-width:400px; padding:0 16px; text-align:center; }
+    .glow-text { font-size:36px; font-weight:800; background:linear-gradient(135deg,#d19c72,#f2e9db); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-transform:uppercase; margin-bottom:12px; }
+    .intro-text { font-size:18px; color:#ccc; max-width:90%; }
+    .btn-group { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
+    .btn-small { background:linear-gradient(135deg,#774936,#a2674d); border:none; padding:10px 20px; font-size:14px; font-weight:bold; color:#fff; border-radius:8px; cursor:pointer; box-shadow:0 4px 14px rgba(119,73,54,0.4); text-transform:uppercase; letter-spacing:1px; }
+    .container { background:#111; padding:20px; border-radius:14px; max-width:360px; width:100%; }
+    .card { background:#fff; color:#000; padding:20px; border-radius:14px; margin-bottom:20px; }
+    h2 { text-align:center; color:#000; font-size:20px; margin-bottom:20px; }
+    .form-group { margin-bottom:14px; }
+    label { display:block; margin-bottom:4px; font-size:13px; color:#333; }
+    input { width:100%; padding:10px; font-size:14px; border-radius:8px; border:1px solid #ccc; }
+    button { width:100%; padding:12px; font-size:14px; background-color:#774936; color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
+    .switch,.link { text-align:center; margin-top:10px; font-size:13px; color:#004481; cursor:pointer; }
+    .hidden { display:none; }
+    .toast-message { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#5e3729,#774936); color:#fff3e6; padding:12px 24px; border-radius:10px; font-size:14px; font-weight:bold; z-index:9999; opacity:0; transition:opacity 0.3s; }
+    .toast-message.show { opacity:1; }
+    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; }
+    .modal-content { background:#fff; padding:20px; border-radius:14px; max-width:320px; width:90%; text-align:center; }
+    @media (max-width:480px) { .glow-text{font-size:28px;} .btn-group{flex-direction:column; gap:10px;} h2{font-size:18px;} .container{padding:16px;} .card{padding:16px;} }
+  </style>
+</head>
+<body>
+
+<!-- Screens -->
+<div class="screen show" id="splashScreen"><div class="splash-logo">H</div></div>
+<div class="screen" id="introScreen"><div class="intro-text">Your gateway to livestock and agriculture sales</div></div>
+<div class="screen" id="homeScreen">
+  <div id="homeWelcome" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh;">
+    <h1 class="glow-text">Welcome to HPSA</h1>
+    <img src="zogo.png" alt="HPSA Logo" style="width:80%; max-width:240px; margin:16px 0; display:block;" />
+    <p style="font-size:18px; font-weight:500; color:#f2e9db; margin-top:6px;">Reliable. Offline-ready. Built for the field.</p>
+    <div class="btn-group">
+      <button class="btn-small" id="btnLogin">Login</button>
+      <button class="btn-small" id="btnRegister">Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- Login/Register -->
+<div class="screen" id="loginScreen">
+  <div class="container">
+    <div class="card" id="loginCard">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <div class="form-group"><label>Email</label><input type="email" id="email" required /></div>
+        <div class="form-group"><label>Password</label><input type="password" id="password" required /></div>
+        <div class="form-group"><label>Project Code</label><input type="text" id="projectCode" required /></div>
+        <button type="submit">Login</button>
+      </form>
+      <div class="switch"><span>Forgot Password? <span class="link" onclick="showResetPopup()">Click here</span></span></div>
+      <div class="switch"><span>Don’t have an account? <span class="link" onclick="showRegister()">Register</span></span></div>
+    </div>
+
+    <div class="card hidden" id="registerCard">
+      <h2>Register</h2>
+      <form id="registerForm">
+        <div class="form-group"><label>Participant</label><input type="text" id="participant" required /></div>
+        <div class="form-group"><label>Project Code</label><input type="text" id="projectId" required /></div>
+        <div class="form-group"><label>Email</label><input type="email" id="regEmail" required /></div>
+        <div class="form-group"><label>Password</label><input type="password" id="regPassword" required /></div>
+        <button type="submit">Register</button>
+      </form>
+      <div class="switch"><span>Already have an account? <span class="link" onclick="showLogin()">Login</span></span></div>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden toast-message"></div>
+
+  <div id="resetModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Reset Password</h3>
+      <input type="email" id="resetEmail" placeholder="Enter your email" />
+      <button onclick="sendPasswordReset()">Send Reset Link</button>
+      <button onclick="closeResetPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+  authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+  projectId: "hpsa-app-6b2d2",
+  storageBucket: "hpsa-app-6b2d2.appspot.com",
+  messagingSenderId: "445389782453",
+  appId: "1:445389782453:web:595647fa1038fab9886dfc"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+enableIndexedDbPersistence(db).catch(e => console.warn("Offline persistence failed:", e.code));
+
+// Project redirects
+const redirectMap = {
+  "PYEI": "sales-summary.html",
+  "PYEI25": "sales-summary.html",
+  "PYEI26": "sales-summary.html",
+  "PYEI27": "sales-summary.html",
+  "SENSUS": "sensus.html",
+  "SENSUS-HOUSEHOLD": "sensus-household.html",
+  "SENSUS-REPORT": "sensus-report.html"  // ✅ new name
+};
+
+
+// Toast
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  toast.classList.add("show");
+  setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.classList.add("hidden"), 300); }, 2500);
+}
+
+// Screen transitions
+function showLogin(){ document.getElementById("loginCard").classList.remove("hidden"); document.getElementById("registerCard").classList.add("hidden"); }
+function showRegister(){ document.getElementById("registerCard").classList.remove("hidden"); document.getElementById("loginCard").classList.add("hidden"); }
+function transitionToScreen(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("show")); requestAnimationFrame(()=>{ const target=document.getElementById(id); if(target)target.classList.add("show"); }); }
+
+// Splash flow
+window.onload = () => {
+  setTimeout(()=>transitionToScreen("introScreen"),3000);
+  setTimeout(()=>transitionToScreen("homeScreen"),6000);
+
+  // Silent offline login
+  if(!navigator.onLine){
+    const cachedProfile = localStorage.getItem("sensusUserProfile");
+    const cachedCreds = localStorage.getItem("sensusUserCreds");
+    if(cachedProfile && cachedCreds){
+      try{
+        const profile=JSON.parse(cachedProfile);
+        const creds=JSON.parse(cachedCreds);
+        if(redirectMap[creds.projectCode]){
+          showToast("Offline mode: using cached login");
+          setTimeout(()=>window.location.href=redirectMap[creds.projectCode],1000);
+        }
+      }catch(e){ console.warn("Offline login failed:",e); }
+    }
+  }
+};
+
+// Button handlers
+document.getElementById("btnLogin").onclick = () => { transitionToScreen("loginScreen"); showLogin(); };
+document.getElementById("btnRegister").onclick = () => { transitionToScreen("loginScreen"); showRegister(); };
+
+// --- Login ---
+document.getElementById("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value;
+  const projectCode=document.getElementById("projectCode").value.trim().toUpperCase();
+  if(!email || !password || !projectCode)return showToast("All fields required");
+  if(!redirectMap[projectCode])return showToast("Invalid Project Code");
+
+  // Offline login
+  if(!navigator.onLine){
+    let cachedCreds=localStorage.getItem(`userCreds_${projectCode}`);
+    let cachedProfile=localStorage.getItem(`userProfile_${projectCode}`);
+    if(!cachedCreds || !cachedProfile){
+      cachedCreds=localStorage.getItem("sensusUserCreds");
+      cachedProfile=localStorage.getItem("sensusUserProfile");
+      if(cachedCreds && cachedProfile){
+        try{
+          const creds=JSON.parse(cachedCreds);
+          const profile=JSON.parse(cachedProfile);
+          if(profile.projectCode){
+            localStorage.setItem(`userCreds_${profile.projectCode}`,JSON.stringify(creds));
+            localStorage.setItem(`userProfile_${profile.projectCode}`,JSON.stringify(profile));
+            console.log("Migrated legacy cache",profile.projectCode);
+          }
+        }catch(err){ console.warn("Offline migration failed:",err); }
+      }
+    }
+    if(cachedCreds && cachedProfile){
+      try{
+        const creds=JSON.parse(cachedCreds);
+        const profile=JSON.parse(cachedProfile);
+        if(creds.email===email && creds.password===password){
+          showToast(`Offline login successful. Welcome back, ${profile.name||email}`);
+          return setTimeout(()=>window.location.href=redirectMap[projectCode],1000);
+        } else showToast("Offline: Invalid email or password");
+      }catch(err){ showToast("Offline: Failed to load saved login"); console.warn(err); }
+    } else showToast("Offline: No saved login found");
+    return;
+  }
+
+  // Online login
+  try{
+    const {user}=await signInWithEmailAndPassword(auth,email,password);
+    const uid=user.uid;
+    const userRef=doc(db,"users",uid);
+    const userSnap=await getDoc(userRef);
+    const profile=userSnap.exists()?userSnap.data():{name:"New User",email,projectCode,dipTank:"",village:""};
+    if(!userSnap.exists()) await setDoc(userRef,profile);
+
+    // Save cache for offline
+    localStorage.setItem(`userCreds_${projectCode}`,JSON.stringify({email,password}));
+    localStorage.setItem(`userProfile_${projectCode}`,JSON.stringify({...profile,projectCode}));
+    localStorage.setItem("sensusUserCreds",JSON.stringify({email,password}));
+    localStorage.setItem("sensusUserProfile",JSON.stringify({...profile,projectCode}));
+
+    console.log("Login cached for offline:",projectCode);
+    window.location.href=redirectMap[projectCode];
+  }catch(err){ showToast("Login failed: "+err.message); }
+});
+
+// --- Register ---
+document.getElementById("registerForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const participant=document.getElementById("participant").value.trim();
+  const projectCode=document.getElementById("projectId").value.trim().toUpperCase();
+  const email=document.getElementById("regEmail").value.trim();
+  const password=document.getElementById("regPassword").value;
+  if(!participant || !projectCode || !email || !password)return showToast("All fields required");
+  if(!redirectMap[projectCode])return showToast("Invalid Project Code");
+  try{
+    const {user}=await createUserWithEmailAndPassword(auth,email,password);
+    const uid=user.uid;
+    const profile={name:participant,email,projectCode,dipTank:"",village:""};
+    await setDoc(doc(db,"users",uid),profile);
+    localStorage.setItem(`userCreds_${projectCode}`,JSON.stringify({email,password}));
+    localStorage.setItem(`userProfile_${projectCode}`,JSON.stringify(profile));
+    showToast("Registration successful");
+    showLogin();
+  }catch(err){ showToast(err.message); }
+});
+
+// Reset password
+window.showResetPopup=()=>document.getElementById("resetModal").classList.remove("hidden");
+window.closeResetPopup=()=>document.getElementById("resetModal").classList.add("hidden");
+window.sendPasswordReset=()=>{
+  const email=document.getElementById("resetEmail").value.trim();
+  if(!email)return showToast("Enter your email");
+  sendPasswordResetEmail(auth,email).then(()=>{showToast("Reset email sent"); closeResetPopup();}).catch(err=>showToast(err.message));
+};
+
+window.showLogin=showLogin; window.showRegister=showRegister;
+
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("Service Worker registered"))
+    .catch(err => console.error("SW registration failed:", err));
+}
+
+
+</script>
+</body>
+</html>

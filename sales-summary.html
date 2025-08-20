@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Report Entry</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Uber Move', sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 450px;
+      width: 100%;
+      background: #111;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255,255,255,0.05);
+    }
+
+    h1 { text-align: center; margin-bottom: 20px; }
+
+    .form-group { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #ccc;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+    }
+
+    input[readonly] {
+      background-color: #1c1c1c;
+      color: #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #774936;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover { background: #5e3729; }
+
+    .summary h3 { font-weight: 400; margin: 8px 0; }
+
+    .actions { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #774936;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      z-index: 9999;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sales Report</h1>
+
+    <form id="summaryForm">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="saleDate" required readonly />
+      </div>
+
+      <div class="form-group">
+        <label>Farmer Name</label>
+        <input type="text" id="farmerName" required />
+      </div>
+
+      <div class="form-group">
+        <label>Project Code</label>
+        <input type="text" id="projectCode" required readonly/>
+      </div>
+
+      <div class="form-group">
+        <label>Dip Tank</label>
+        <input type="text" id="dipTank" required />
+      </div>
+
+      <div class="form-group">
+        <label>Animal Type</label>
+        <select id="animalType" required>
+          <option value="">Select</option>
+          <option value="goat">Goat 🐐</option>
+          <option value="chicken">Chicken 🐓</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Number of Animals</label>
+        <input type="number" id="animalCount" required />
+      </div>
+
+      <div class="form-group">
+        <label>Amount (Rands)</label>
+        <input type="number" id="totalAmount" required />
+      </div>
+
+      <div class="form-group">
+        <label>Youth Payment (Rands)</label>
+        <input type="number" id="youthPayment" required />
+      </div>
+
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select id="paymentMethod" required>
+          <option value="">Select</option>
+          <option value="cash">Cash 💵</option>
+          <option value="machine">Machine 📥️</option>
+        </select>
+      </div>
+
+      <button type="submit">Submit Sale</button>
+    </form>
+
+    <div class="summary">
+      <h3>🐐 Total Goats: <span id="totalGoats">0</span></h3>
+      <h3>🐓 Total Chickens: <span id="totalChickens">0</span></h3>
+      <h3>💰 Total Sales: R<span id="totalSales">0.00</span></h3>
+      <h3>🧒 Youth Payments: R<span id="totalYouth">0.00</span></h3>
+      <h3>💵 Cash: R<span id="cashTotal">0.00</span> | 📥️ Machine: R<span id="machineTotal">0.00</span></h3>
+    </div>
+
+    <div class="actions">
+      <button type="button" id="clearBtn">Clear Form</button>
+      <button type="button" id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div id="logoutConfirm" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <p style="color: #f2d0b5; font-size: 1rem;">Are you sure you want to logout?</p>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button onclick="confirmLogout()" style="flex: 1;">Yes</button>
+        <button onclick="closeLogoutPopup()" style="flex: 1; background: #444;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" style="display: none;"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, query, where,
+    enableIndexedDbPersistence, doc, getDoc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+    authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+    projectId: "hpsa-app-6b2d2",
+    storageBucket: "hpsa-app-6b2d2.appspot.com",
+    messagingSenderId: "445389782453",
+    appId: "1:445389782453:web:595647fa1038fab9886dfc",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Enable offline persistence (OK if it fails due to multi-tab)
+  enableIndexedDbPersistence(db).catch(err => {
+    console.warn("Persistence could not be enabled:", err);
+  });
+
+  // Elements
+  const form = document.getElementById("summaryForm");
+  const saleDate = document.getElementById("saleDate");
+  const farmerName = document.getElementById("farmerName");
+  const projectCode = document.getElementById("projectCode");
+  const dipTank = document.getElementById("dipTank");
+  const animalType = document.getElementById("animalType");
+  const animalCount = document.getElementById("animalCount");
+  const totalAmount = document.getElementById("totalAmount");
+  const youthPayment = document.getElementById("youthPayment");
+  const paymentMethod = document.getElementById("paymentMethod");
+
+  const totalGoats = document.getElementById("totalGoats");
+  const totalChickens = document.getElementById("totalChickens");
+  const totalSales = document.getElementById("totalSales");
+  const totalYouth = document.getElementById("totalYouth");
+  const cashTotal = document.getElementById("cashTotal");
+  const machineTotal = document.getElementById("machineTotal");
+  const toast = document.getElementById("toast");
+
+  // Default date
+  const today = new Date().toISOString().split("T")[0];
+  saleDate.value = today;
+
+  function showToast(message) {
+    toast.textContent = message;
+    toast.style.display = "block";
+    setTimeout(() => (toast.style.display = "none"), 3500);
+  }
+
+  // --- Detect Online/Offline ---
+  window.addEventListener("offline", () => {
+    showToast("⚠️ You are offline. Sales will be saved locally.");
+  });
+  window.addEventListener("online", () => {
+    showToast("✅ Back online! Syncing sales to server...");
+  });
+
+  // --- Summary binding (real-time; includes local pending writes) ---
+  let summaryUnsub = null;
+  function bindSummaryForProject(project) {
+    if (!project) return;
+    if (summaryUnsub) summaryUnsub();
+
+    const qRef = query(collection(db, "sales-report"), where("projectCode", "==", project));
+    summaryUnsub = onSnapshot(qRef, (snapshot) => {
+      let goats = 0, chickens = 0, sales = 0, youth = 0, cash = 0, machine = 0;
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.animalType === "goat") goats += d.count || 0;
+        if (d.animalType === "chicken") chickens += d.count || 0;
+        sales += d.amount || 0;
+        youth += d.youthPayment || 0;
+        if (d.method === "cash") cash += d.amount || 0;
+        if (d.method === "machine") machine += d.amount || 0;
+      });
+      totalGoats.textContent = goats;
+      totalChickens.textContent = chickens;
+      totalSales.textContent = sales.toFixed(2);
+      totalYouth.textContent = youth.toFixed(2);
+      cashTotal.textContent = cash.toFixed(2);
+      machineTotal.textContent = machine.toFixed(2);
+    }, (err) => {
+      console.error("Summary listener error:", err);
+      showToast("Could not load summary.");
+    });
+  }
+
+  // Keep projectCode filled & read-only (and restore after form.reset)
+  function lockProjectCode(pc) {
+    projectCode.value = pc || "";
+    projectCode.readOnly = true;
+  }
+
+  // Submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const pc = (projectCode.value || "").trim(); // capture before reset
+    const sale = {
+      date: saleDate.value,
+      name: (farmerName.value || "").trim(),
+      projectCode: pc,
+      dipTank: (dipTank.value || "").trim(),
+      animalType: animalType.value,
+      count: parseInt(animalCount.value, 10),
+      amount: parseFloat(totalAmount.value),
+      youthPayment: parseFloat(youthPayment.value),
+      method: paymentMethod.value,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (
+      !sale.date || !sale.name || !sale.projectCode || !sale.dipTank ||
+      !sale.animalType || isNaN(sale.count) || isNaN(sale.amount) ||
+      isNaN(sale.youthPayment) || !sale.method
+    ) {
+      showToast("All fields are required.");
+      return;
+    }
+
+    if (!navigator.onLine) showToast("📴 Offline: Sale saved locally. Will sync later.");
+    else showToast("Sale submitted! Saving...");
+
+    try {
+      await addDoc(collection(db, "sales-report"), sale);
+      // Real-time summary will update via onSnapshot (even offline with pending writes)
+    } catch (err) {
+      console.error("Failed to save sale:", err);
+      showToast("⚠️ Error saving sale. It will retry when online.");
+    } finally {
+      // Reset but keep today + project code locked in
+      form.reset();
+      saleDate.value = today;
+      lockProjectCode(pc);
+    }
+  });
+
+  // Buttons
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    const pc = projectCode.value;
+    form.reset();
+    saleDate.value = today;
+    lockProjectCode(pc);
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    document.getElementById("logoutConfirm").style.display = "flex";
+  });
+
+  window.confirmLogout = () => {
+    signOut(auth)
+      .then(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "index.html";
+      })
+      .catch(() => showToast("Logout failed"));
+  };
+  window.closeLogoutPopup = () => {
+    document.getElementById("logoutConfirm").style.display = "none";
+  };
+
+  // --- After login, load & lock the user's project code, then bind summary ---
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    // 1) Prefer project code saved at login
+    let pc = (localStorage.getItem("projectCode") || "").trim();
+
+    // 2) Fallback to Firestore /users/{uid}.projectCode
+    if (!pc) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const snap = await getDoc(userRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data && data.projectCode) {
+            pc = String(data.projectCode).trim();
+            localStorage.setItem("projectCode", pc);
+          }
+        }
+      } catch (e) {
+        console.warn("Could not read user profile:", e);
+      }
+    }
+
+    if (!pc) {
+      showToast("No project code found for this user.");
+      // Optional: redirect to a profile/setup page
+      // window.location.href = "profile.html";
+      return;
+    }
+
+    lockProjectCode(pc);
+    bindSummaryForProject(pc);
+  });
+</script>
+</body>
+</html>
