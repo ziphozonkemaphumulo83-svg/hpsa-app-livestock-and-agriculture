@@ -1,6 +1,7 @@
 {
   "name": "HPSA Livestock & Agriculture",
   "short_name": "HPSA",
+  "description": "HPSA App is an offline-capable data collection tool for health surveys.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
