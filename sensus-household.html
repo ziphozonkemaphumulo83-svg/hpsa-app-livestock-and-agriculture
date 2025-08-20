@@ -6,23 +6,9 @@
 <title>Census Step 2</title>
 <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  body {
-    margin: 0;
-    font-family: 'Uber Move', sans-serif;
-    background: #000;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-  }
-  .container {
-    background: #111;
-    padding: 20px;
-    border-radius: 16px;
-    max-width: 500px;
-    width: 100%;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.08);
-  }
+  /* KEEP OLD STYLES */
+  body { margin: 0; font-family: 'Uber Move', sans-serif; background: #000; color: #fff; display: flex; justify-content: center; padding: 20px; }
+  .container { background: #111; padding: 20px; border-radius: 16px; max-width: 500px; width: 100%; box-shadow: 0 0 20px rgba(255,255,255,0.08); }
   h1 { text-align: center; font-size: 1.4rem; margin-bottom: 20px; }
   .form-group { margin-bottom: 14px; display: flex; flex-direction: column; }
   label { font-size: 0.9rem; margin-bottom: 5px; color: #ccc; }
@@ -33,12 +19,12 @@
   .btn-secondary { background: #333; margin-top: 10px; }
   .btn-secondary:hover { background: #555; }
   .toast { display: none; background: #774936; padding: 12px; color: white; border-radius: 10px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 14px; z-index: 999; text-align: center; }
-  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; }
+  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
   .modal-content { background: #111; color: white; border: 2px solid #774936; border-radius: 12px; padding: 20px; max-width: 300px; text-align: center; }
   .modal-content button { padding: 10px 20px; border: none; border-radius: 8px; margin: 5px; cursor: pointer; }
   .modal-content button:first-child { background: #774936; color: white; }
   .modal-content button:last-child { background: #333; color: white; }
-  @media (max-width: 480px) { h1 { font-size: 1.2rem; } }
+  @media (max-width:480px){h1{font-size:1.2rem;}}
 </style>
 </head>
 <body>
@@ -108,40 +94,25 @@ function showToast(msg) {
 }
 
 window.saveFinalCensus = async function () {
-  const requiredFields = [
-    "goats","goatsUsed","goatsSold","goatsStolen","goatsDied",
-    "kidsBorn","kidsSurvived","chickens","chickensUsed","chickensSold","chickensStolen","chickensDied"
-  ];
+  const requiredFields = ["goats","goatsUsed","goatsSold","goatsStolen","goatsDied",
+    "kidsBorn","kidsSurvived","chickens","chickensUsed","chickensSold","chickensStolen","chickensDied"];
 
   const step2 = {};
   for (let id of requiredFields) {
     const val = document.getElementById(id).value.trim();
-    if (val === "") {
-      showToast(`⚠️ ${id.replace(/([A-Z])/g,' $1')} is required`);
-      return;
-    }
+    if (val === "") { showToast(`⚠️ ${id.replace(/([A-Z])/g,' $1')} is required`); return; }
     step2[id] = Number(val);
   }
 
-  ["goatDiseases","vaccinated","medicines","feed"].forEach(id => {
-    step2[id] = document.getElementById(id).value.trim();
-  });
+  ["goatDiseases","vaccinated","medicines","feed"].forEach(id => { step2[id] = document.getElementById(id).value.trim(); });
 
   const step1 = JSON.parse(sessionStorage.getItem("censusStep1") || "{}");
   const fullEntry = {...step1, ...step2, createdAt: new Date().toISOString() };
 
   if (navigator.onLine) {
-    try {
-      await addDoc(collection(db,"sensusData"), fullEntry);
-      showToast("✅ Data saved online successfully");
-      resetInputs();
-    } catch (err) {
-      console.error(err);
-      saveOffline(fullEntry);
-    }
-  } else {
-    saveOffline(fullEntry);
-  }
+    try { await addDoc(collection(db,"sensusData"), fullEntry); showToast("✅ Data saved online successfully"); resetInputs(); }
+    catch(err) { console.error(err); saveOffline(fullEntry); }
+  } else { saveOffline(fullEntry); }
 };
 
 function saveOffline(entry) {
@@ -150,19 +121,18 @@ function saveOffline(entry) {
   localStorage.setItem("offlinesensusData",JSON.stringify(offlineData));
   showToast("💾 Saved offline. Will sync when online.");
   resetInputs();
+
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    navigator.serviceWorker.ready.then(reg => { reg.sync.register('sync-offline-sensus').catch(err=>console.warn(err)); });
+  }
 }
 
-function resetInputs() {
-  document.querySelectorAll("input").forEach(i => i.value = "");
-}
+function resetInputs(){ document.querySelectorAll("input").forEach(i=>i.value=""); }
 
 window.addEventListener("online", async () => {
   const offlineData = JSON.parse(localStorage.getItem("offlinesensusData")||"[]");
   if (!offlineData.length) return;
-  for (let entry of offlineData) {
-    try { await addDoc(collection(db,"sensusData"), entry); }
-    catch(err){ console.error("Offline sync failed:", err); return; }
-  }
+  for (let entry of offlineData) { try { await addDoc(collection(db,"sensusData"), entry); } catch(err){ console.error(err); return; } }
   localStorage.removeItem("offlinesensusData");
   showToast("✅ Offline data synced successfully");
 });
@@ -171,6 +141,13 @@ window.goBack = () => { sessionStorage.setItem("profileCaptured","true"); window
 window.openLogoutPopup = () => { document.getElementById("logoutConfirm").style.display="flex"; };
 window.closeLogoutPopup = () => { document.getElementById("logoutConfirm").style.display="none"; };
 window.confirmLogout = () => { sessionStorage.clear(); localStorage.removeItem("censusUserProfile"); window.location.href="index.html"; };
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(reg => console.log('Service Worker registered', reg))
+    .catch(err => console.error('SW registration failed', err));
+}
 </script>
 </body>
 </html>

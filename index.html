@@ -1,28 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#795548"> 
-<link rel="icon" href="icons/icon-192.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HPSA App</title>
+
+  <!-- PWA Manifest & Theme -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#795548">
+  <link rel="icon" href="icons/icon-192.png" type="image/png">
+
+  <!-- Fonts & Styles -->
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+
   <style>
-    /* Basic Styles & Layouts */
-    body { margin:0; font-family:'Uber Move',sans-serif; background:#000; color:#fff; display:flex; justify-content:center; align-items:flex-start; min-height:100vh; overflow-x:hidden; padding-top:20px; }
-    .screen { position:absolute; top:0; left:0; width:100%; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; background:#000; padding:20px; text-align:center; opacity:0; transform:translateY(30px); pointer-events:none; transition:opacity 0.5s, transform 0.5s; }
-    .screen.show { opacity:1; transform:translateY(0); pointer-events:auto; z-index:2; }
-    .splash-logo { width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#774936,#000);display:flex;justify-content:center;align-items:center;font-size:40px;font-weight:bold;color:#fff;animation:spin 4s linear infinite;box-shadow:0 0 20px rgba(119,73,54,0.8); }
+    body {
+      margin:0;
+      font-family:'Uber Move',sans-serif;
+      background:#000;
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      min-height:100vh;
+      overflow-x:hidden;
+      padding-top:20px;
+    }
+    .screen {
+      position:absolute;
+      top:0; left:0;
+      width:100%;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      background:#000;
+      padding:20px;
+      text-align:center;
+      opacity:0;
+      transform:translateY(30px);
+      pointer-events:none;
+      transition:opacity 0.5s, transform 0.5s;
+    }
+    .screen.show {
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+      z-index:2;
+    }
+    .splash-logo {
+      width:120px; height:120px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#774936,#000);
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-size:40px;
+      font-weight:bold;
+      color:#fff;
+      animation:spin 4s linear infinite;
+      box-shadow:0 0 20px rgba(119,73,54,0.8);
+    }
     @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+
     #homeWelcome { max-width:400px; padding:0 16px; text-align:center; }
-    .glow-text { font-size:36px; font-weight:800; background:linear-gradient(135deg,#d19c72,#f2e9db); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-transform:uppercase; margin-bottom:12px; }
+    .glow-text {
+      font-size:36px;
+      font-weight:800;
+      background:linear-gradient(135deg,#d19c72,#f2e9db);
+      -webkit-background-clip:text;
+      -webkit-text-fill-color:transparent;
+      text-transform:uppercase;
+      margin-bottom:12px;
+    }
     .intro-text { font-size:18px; color:#ccc; max-width:90%; }
     .btn-group { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; justify-content:center; }
-    .btn-small { background:linear-gradient(135deg,#774936,#a2674d); border:none; padding:10px 20px; font-size:14px; font-weight:bold; color:#fff; border-radius:8px; cursor:pointer; box-shadow:0 4px 14px rgba(119,73,54,0.4); text-transform:uppercase; letter-spacing:1px; }
-    .container { background:#111; padding:20px; border-radius:14px; max-width:360px; width:100%; }
-    .card { background:#fff; color:#000; padding:20px; border-radius:14px; margin-bottom:20px; }
+    .btn-small {
+      background:linear-gradient(135deg,#774936,#a2674d);
+      border:none;
+      padding:10px 20px;
+      font-size:14px;
+      font-weight:bold;
+      color:#fff;
+      border-radius:8px;
+      cursor:pointer;
+      box-shadow:0 4px 14px rgba(119,73,54,0.4);
+      text-transform:uppercase;
+      letter-spacing:1px;
+    }
+    .container {
+      background:#111;
+      padding:20px;
+      border-radius:14px;
+      max-width:360px;
+      width:100%;
+    }
+    .card {
+      background:#fff;
+      color:#000;
+      padding:20px;
+      border-radius:14px;
+      margin-bottom:20px;
+    }
     h2 { text-align:center; color:#000; font-size:20px; margin-bottom:20px; }
     .form-group { margin-bottom:14px; }
     label { display:block; margin-bottom:4px; font-size:13px; color:#333; }
@@ -30,11 +111,45 @@
     button { width:100%; padding:12px; font-size:14px; background-color:#774936; color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer; }
     .switch,.link { text-align:center; margin-top:10px; font-size:13px; color:#004481; cursor:pointer; }
     .hidden { display:none; }
-    .toast-message { position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#5e3729,#774936); color:#fff3e6; padding:12px 24px; border-radius:10px; font-size:14px; font-weight:bold; z-index:9999; opacity:0; transition:opacity 0.3s; }
+    .toast-message {
+      position:fixed;
+      bottom:30px;
+      left:50%;
+      transform:translateX(-50%);
+      background:linear-gradient(135deg,#5e3729,#774936);
+      color:#fff3e6;
+      padding:12px 24px;
+      border-radius:10px;
+      font-size:14px;
+      font-weight:bold;
+      z-index:9999;
+      opacity:0;
+      transition:opacity 0.3s;
+    }
     .toast-message.show { opacity:1; }
-    .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:9999; }
-    .modal-content { background:#fff; padding:20px; border-radius:14px; max-width:320px; width:90%; text-align:center; }
-    @media (max-width:480px) { .glow-text{font-size:28px;} .btn-group{flex-direction:column; gap:10px;} h2{font-size:18px;} .container{padding:16px;} .card{padding:16px;} }
+    .modal {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      background:rgba(0,0,0,0.6);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+    .modal-content {
+      background:#fff;
+      padding:20px;
+      border-radius:14px;
+      max-width:320px;
+      width:90%;
+      text-align:center;
+    }
+    @media (max-width:480px) {
+      .glow-text{font-size:28px;}
+      .btn-group{flex-direction:column; gap:10px;}
+      h2{font-size:18px;}
+      .container{padding:16px;}
+      .card{padding:16px;}
+    }
   </style>
 </head>
 <body>
@@ -99,7 +214,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/fireba
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getFirestore, enableIndexedDbPersistence, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
   authDomain: "hpsa-app-6b2d2.firebaseapp.com",
@@ -122,11 +236,10 @@ const redirectMap = {
   "PYEI27": "sales-summary.html",
   "CENSUS": "sensus.html",
   "CENSUS-HOUSEHOLD": "sensus-household.html",
-  "CENSUS-REPORT": "sensus-report.html"  // ✅ new name
+  "CENSUS-REPORT": "sensus-report.html"
 };
 
-
-// Toast
+// Toast helper
 function showToast(msg) {
   const toast = document.getElementById("toast");
   toast.textContent = msg;
@@ -145,7 +258,6 @@ window.onload = () => {
   setTimeout(()=>transitionToScreen("introScreen"),3000);
   setTimeout(()=>transitionToScreen("homeScreen"),6000);
 
-  // Silent offline login
   if(!navigator.onLine){
     const cachedProfile = localStorage.getItem("sensusUserProfile");
     const cachedCreds = localStorage.getItem("sensusUserCreds");
@@ -166,7 +278,7 @@ window.onload = () => {
 document.getElementById("btnLogin").onclick = () => { transitionToScreen("loginScreen"); showLogin(); };
 document.getElementById("btnRegister").onclick = () => { transitionToScreen("loginScreen"); showRegister(); };
 
-// --- Login ---
+// Login
 document.getElementById("loginForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const email=document.getElementById("email").value.trim();
@@ -175,25 +287,9 @@ document.getElementById("loginForm").addEventListener("submit", async e=>{
   if(!email || !password || !projectCode)return showToast("All fields required");
   if(!redirectMap[projectCode])return showToast("Invalid Project Code");
 
-  // Offline login
   if(!navigator.onLine){
     let cachedCreds=localStorage.getItem(`userCreds_${projectCode}`);
     let cachedProfile=localStorage.getItem(`userProfile_${projectCode}`);
-    if(!cachedCreds || !cachedProfile){
-      cachedCreds=localStorage.getItem("sensusUserCreds");
-      cachedProfile=localStorage.getItem("sensusUserProfile");
-      if(cachedCreds && cachedProfile){
-        try{
-          const creds=JSON.parse(cachedCreds);
-          const profile=JSON.parse(cachedProfile);
-          if(profile.projectCode){
-            localStorage.setItem(`userCreds_${profile.projectCode}`,JSON.stringify(creds));
-            localStorage.setItem(`userProfile_${profile.projectCode}`,JSON.stringify(profile));
-            console.log("Migrated legacy cache",profile.projectCode);
-          }
-        }catch(err){ console.warn("Offline migration failed:",err); }
-      }
-    }
     if(cachedCreds && cachedProfile){
       try{
         const creds=JSON.parse(cachedCreds);
@@ -207,7 +303,6 @@ document.getElementById("loginForm").addEventListener("submit", async e=>{
     return;
   }
 
-  // Online login
   try{
     const {user}=await signInWithEmailAndPassword(auth,email,password);
     const uid=user.uid;
@@ -216,18 +311,16 @@ document.getElementById("loginForm").addEventListener("submit", async e=>{
     const profile=userSnap.exists()?userSnap.data():{name:"New User",email,projectCode,dipTank:"",village:""};
     if(!userSnap.exists()) await setDoc(userRef,profile);
 
-    // Save cache for offline
     localStorage.setItem(`userCreds_${projectCode}`,JSON.stringify({email,password}));
     localStorage.setItem(`userProfile_${projectCode}`,JSON.stringify({...profile,projectCode}));
     localStorage.setItem("sensusUserCreds",JSON.stringify({email,password}));
     localStorage.setItem("sensusUserProfile",JSON.stringify({...profile,projectCode}));
 
-    console.log("Login cached for offline:",projectCode);
     window.location.href=redirectMap[projectCode];
   }catch(err){ showToast("Login failed: "+err.message); }
 });
 
-// --- Register ---
+// Register
 document.getElementById("registerForm").addEventListener("submit", async e=>{
   e.preventDefault();
   const participant=document.getElementById("participant").value.trim();
@@ -236,6 +329,7 @@ document.getElementById("registerForm").addEventListener("submit", async e=>{
   const password=document.getElementById("regPassword").value;
   if(!participant || !projectCode || !email || !password)return showToast("All fields required");
   if(!redirectMap[projectCode])return showToast("Invalid Project Code");
+
   try{
     const {user}=await createUserWithEmailAndPassword(auth,email,password);
     const uid=user.uid;
@@ -248,6 +342,7 @@ document.getElementById("registerForm").addEventListener("submit", async e=>{
   }catch(err){ showToast(err.message); }
 });
 
+// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js')
     .then(() => console.log('Service Worker Registered'))

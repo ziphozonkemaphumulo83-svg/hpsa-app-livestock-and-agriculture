@@ -1,14 +1,16 @@
 {
-  "name": "HPSA Livestock & Agriculture Census",
+  "name": "HPSA Census App",
   "short_name": "HPSA",
-  "description": "Offline-ready app for livestock and agriculture census reporting",
-  "id": "/",
-  "start_url": "/index.html?source=pwa",
-  "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#774936",
-  "orientation": "portrait",
+  "description": "Offline-ready livestock and household census app for field data collection.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/index.html",
   "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#774936",
+  "background_color": "#000000",
+  "iarc_rating_id": "e.g., 1234567890",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -24,18 +26,16 @@
   "screenshots": [
     {
       "src": "/screenshot1.png",
-      "sizes": "512x512",
+      "sizes": "540x720",
       "type": "image/png"
     },
     {
       "src": "/screenshot2.png",
-      "sizes": "512x512",
+      "sizes": "540x720",
       "type": "image/png"
     }
   ],
-  "categories": ["education", "productivity", "utilities"],
-  "launch_handler": {},
-  "lang": "en-US",
-  "related_applications": [],
-  "prefer_related_applications": false
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }

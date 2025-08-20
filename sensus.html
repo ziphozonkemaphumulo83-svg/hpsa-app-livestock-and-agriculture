@@ -7,88 +7,18 @@
   <link rel="stylesheet" href="styles.css" />
   <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Uber Move', sans-serif;
-      background: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-      min-height: 100vh;
-    }
-    .container {
-      background: #111;
-      border-radius: 16px;
-      padding: 20px;
-      width: 100%;
-      max-width: 500px;
-    }
-    h1 {
-      text-align: center;
-      font-size: 1.4rem;
-      margin-bottom: 16px;
-      color: #f2d0b5;
-    }
-    .profile-header {
-      background: #222;
-      padding: 12px 14px;
-      border-radius: 12px;
-      margin-bottom: 16px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-      text-align: center;
-    }
+    /* KEEP ALL OLD STYLES INTACT */
+    body { margin: 0; font-family: 'Uber Move', sans-serif; background: #000; color: #fff; display: flex; justify-content: center; padding: 20px; min-height: 100vh; }
+    .container { background: #111; border-radius: 16px; padding: 20px; width: 100%; max-width: 500px; }
+    h1 { text-align: center; font-size: 1.4rem; margin-bottom: 16px; color: #f2d0b5; }
+    .profile-header { background: #222; padding: 12px 14px; border-radius: 12px; margin-bottom: 16px; font-size: 0.95rem; line-height: 1.5; text-align: center; }
     .form-group { margin-bottom: 14px; }
-    label {
-      font-size: 0.85rem;
-      color: #ccc;
-      display: block;
-      margin-bottom: 5px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 10px;
-      background: #222;
-      border: none;
-      color: #fff;
-      font-size: 0.95rem;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #774936;
-      border: none;
-      border-radius: 10px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      margin-top: 12px;
-    }
+    label { font-size: 0.85rem; color: #ccc; display: block; margin-bottom: 5px; }
+    input { width: 100%; padding: 10px; border-radius: 10px; background: #222; border: none; color: #fff; font-size: 0.95rem; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #774936; border: none; border-radius: 10px; color: #fff; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 12px; }
     button:hover { background: #5e3729; }
-    .section-title {
-      margin: 30px 0 10px;
-      font-size: 1.1rem;
-      border-bottom: 1px solid #444;
-      padding-bottom: 6px;
-      color: #d6b392;
-    }
-    .toast {
-      display: none;
-      background: #774936;
-      padding: 12px;
-      color: white;
-      border-radius: 10px;
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 14px;
-      z-index: 999;
-    }
+    .section-title { margin: 30px 0 10px; font-size: 1.1rem; border-bottom: 1px solid #444; padding-bottom: 6px; color: #d6b392; }
+    .toast { display: none; background: #774936; padding: 12px; color: white; border-radius: 10px; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); font-size: 14px; z-index: 999; }
     .hidden { display: none; }
   </style>
 </head>
@@ -149,8 +79,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const profileHeader = document.getElementById("profileHeader");
     const profileForm = document.getElementById("profileForm");
+    const profileHeader = document.getElementById("profileHeader");
     const censusSection = document.getElementById("censusSection");
 
     function showToast(msg) {
@@ -169,7 +99,6 @@
       document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
       if (captured && saved.participant) {
-        // Go straight to sensus-household if profile exists
         window.location.href = "sensus-household.html";
       }
     }
@@ -193,18 +122,37 @@
 
       localStorage.setItem("censusUserProfile", JSON.stringify(profile));
       sessionStorage.setItem("profileCaptured", "true");
-
       showToast("✅ Profile saved. Redirecting...");
 
-      // Go to sensus-household after saving
+      // Save offline for background sync
+      saveOffline(profile);
+
       setTimeout(() => window.location.href = "sensus-household.html", 800);
     };
-    
+
+    function saveOffline(entry) {
+      const offlineData = JSON.parse(localStorage.getItem('offlineProfiles')||'[]');
+      offlineData.push({ ...entry, timestamp: new Date().toISOString() });
+      localStorage.setItem('offlineProfiles', JSON.stringify(offlineData));
+
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(reg => {
+          reg.sync.register('sync-offline-profiles').catch(err => console.warn('Background sync failed', err));
+        });
+      }
+    }
+
     window.submitCensus = function() {
-      // This section will rarely be used as the page now always redirects
       showToast("Redirecting...");
       setTimeout(() => window.location.href = "sensus-household.html", 800);
     };
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.error('SW registration failed', err));
+    }
 
     initPage();
   </script>
