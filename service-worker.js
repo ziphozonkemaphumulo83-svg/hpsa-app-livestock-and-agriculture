@@ -8,12 +8,12 @@ import { CacheableResponsePlugin } from 'https://storage.googleapis.com/workbox-
 // -----------------------------
 // Precache essential pages & assets
 // -----------------------------
+console.log('[SW] Precaching essential assets...');
 precacheAndRoute([
   { url: 'offline.html', revision: '1' },
   { url: 'index.html', revision: '1' },
   { url: 'sales-summary.html', revision: '1' },
   { url: 'sales-report.html', revision: '1' },
-  { url: 'census.html', revision: '1' },
   { url: 'sensus.html', revision: '1' },
   { url: 'sensus-household.html', revision: '1' },
   { url: 'sensus-report.html', revision: '1' },
@@ -27,7 +27,11 @@ precacheAndRoute([
 // Navigation caching with proper fallback
 // -----------------------------
 registerRoute(
-  ({ request }) => request.mode === 'navigate',
+  ({ request }) => {
+    const isNav = request.mode === 'navigate';
+    if (isNav) console.log('[SW] Navigation request:', request.url);
+    return isNav;
+  },
   new NetworkFirst({
     cacheName: 'pages-cache',
     networkTimeoutSeconds: 5,
@@ -59,26 +63,41 @@ registerRoute(
 // -----------------------------
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
+    console.log('[SW][FETCH] Navigation attempt:', event.request.url);
+
     event.respondWith(
       fetch(event.request)
         .then((response) => {
+          console.log('[SW][FETCH] Network success:', event.request.url);
           if (!response || response.status !== 200) {
+            console.warn('[SW][FETCH] Invalid response:', response);
             throw new Error('Network response invalid');
           }
           return response;
         })
-        .catch(async () => {
+        .catch(async (err) => {
+          console.warn('[SW][FETCH] Network failed, trying cache...', event.request.url, err);
+
           const cache = await caches.open('pages-cache');
 
-          // Use the cached version of the requested URL
+          // Try full URL
           const cachedResponse = await cache.match(event.request.url);
-          if (cachedResponse) return cachedResponse;
+          if (cachedResponse) {
+            console.log('[SW][FETCH] Found cached version (full URL):', event.request.url);
+            return cachedResponse;
+          }
 
-          // Try matching by filename only (fallback for relative navigation)
+          // Try by filename only
           const urlParts = event.request.url.split('/');
           const filename = urlParts[urlParts.length - 1];
           const fallback = await cache.match(filename);
-          return fallback || caches.match('offline.html');
+          if (fallback) {
+            console.log('[SW][FETCH] Found cached version (filename match):', filename);
+            return fallback;
+          }
+
+          console.warn('[SW][FETCH] Nothing cached, showing offline.html');
+          return caches.match('offline.html');
         })
     );
   }
@@ -88,6 +107,7 @@ self.addEventListener('fetch', (event) => {
 // Background Sync: offline form submissions
 // -----------------------------
 self.addEventListener('sync', (event) => {
+  console.log('[SW] Sync event triggered:', event.tag);
   if (event.tag === 'sync-forms') {
     event.waitUntil(syncFormsToServer());
   }
@@ -106,6 +126,7 @@ async function syncFormsToServer() {
 // Periodic Background Sync (optional)
 // -----------------------------
 self.addEventListener('periodicsync', (event) => {
+  console.log('[SW] Periodic sync triggered:', event.tag);
   if (event.tag === 'update-data') {
     event.waitUntil(fetchLatestData());
   }
@@ -125,6 +146,7 @@ async function fetchLatestData() {
 // -----------------------------
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[SW] SKIP_WAITING received, activating new service worker...');
     self.skipWaiting();
   }
 });
