@@ -16,6 +16,7 @@ body {
   min-height: 100vh;
   padding: 20px;
   color: #1e1e1e;
+  transition: background 0.3s ease;
 }
 
 /* App Container */
@@ -26,6 +27,11 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 440px;
+  transition: box-shadow 0.3s ease;
+}
+
+.container:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
 /* Screens (login/welcome) */
@@ -39,11 +45,13 @@ body {
   padding: 24px;
   background: transparent;
   text-align: center;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .screen.show {
   display: flex;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .splash-logo {
@@ -101,6 +109,11 @@ body {
   padding: 20px;
   box-shadow: 0 0 12px rgba(0,0,0,0.05);
   margin-bottom: 20px;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
 }
 
 .form-group {
@@ -123,6 +136,13 @@ input, select {
   border-radius: 12px;
   background-color: #f8f9fa;
   color: #1e1e1e;
+  transition: border 0.2s ease, background 0.2s ease;
+}
+
+input:focus, select:focus {
+  border-color: #1e2a38;
+  outline: none;
+  background-color: #fff;
 }
 
 /* Password toggle */
@@ -143,6 +163,11 @@ input, select {
   font-size: 18px;
   cursor: pointer;
   color: #888;
+  transition: color 0.2s ease;
+}
+
+.toggle-password:hover {
+  color: #1e2a38;
 }
 
 /* Buttons */
@@ -157,13 +182,14 @@ button, .btn-small, .primary-btn {
   border-radius: 12px;
   margin-top: 10px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 button:hover,
 .btn-small:hover,
 .primary-btn:hover {
   background-color: #344054;
+  transform: translateY(-1px);
 }
 
 .btn-group {
@@ -183,6 +209,11 @@ button:hover,
   display: block;
   font-size: 14px;
   text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: #003366;
 }
 
 .switch {
@@ -196,7 +227,7 @@ button:hover,
   position: fixed;
   bottom: 30px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(20px);
   background: #1e2a38;
   color: #fff;
   padding: 12px 24px;
@@ -225,6 +256,13 @@ button:hover,
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.show {
+  display: flex;
+  opacity: 1;
 }
 
 .modal-content {
@@ -235,6 +273,8 @@ button:hover,
   width: 90%;
   max-width: 320px;
   color: #1e1e1e;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
 }
 
 .modal-content input {
@@ -243,11 +283,22 @@ button:hover,
   margin-bottom: 14px;
   border: 1px solid #ccc;
   border-radius: 10px;
+  transition: border 0.2s ease;
+}
+
+.modal-content input:focus {
+  border-color: #1e2a38;
+  outline: none;
 }
 
 .modal-content button {
   background: #1e2a38;
   margin-top: 6px;
+  transition: background 0.3s ease;
+}
+
+.modal-content button:hover {
+  background: #344054;
 }
 
 /* Utility */
