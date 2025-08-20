@@ -1,5 +1,5 @@
 {
-  "name": "HPSA App - Livestock & Agriculture",
+  "name": "HPSA App - Livestock &amp; Agriculture",
   "short_name": "HPSA App",
   "id": "hpsa-app",
   "description": "Offline-ready app for livestock, agriculture, census and sales management.",
@@ -9,8 +9,11 @@
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#795548",
-  "categories": ["productivity", "business", "utilities"],
-
+  "categories": [
+    "productivity",
+    "business",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -37,7 +40,6 @@
       "purpose": "maskable"
     }
   ],
-
   "launch_handler": {
     "client_mode": "navigate-existing"
   }
