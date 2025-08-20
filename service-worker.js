@@ -6,13 +6,16 @@ import { ExpirationPlugin } from 'https://storage.googleapis.com/workbox-cdn/rel
 import { CacheableResponsePlugin } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-cacheable-response.prod.js';
 
 // -----------------------------
-// Precache essential assets
+// Precache essential pages & assets
 // -----------------------------
 precacheAndRoute([
   { url: 'offline.html', revision: '1' },
   { url: 'index.html', revision: '1' },
-  { url: 'census.html', revision: '1' },
-  { url: 'census2.html', revision: '1' },
+  { url: 'sales-summary.html', revision: '1' },
+  { url: 'sales-report.html', revision: '1' },
+  { url: 'sensus.html', revision: '1' },
+  { url: 'sensus-household.html', revision: '1' },
+  { url: 'sensus-report.html', revision: '1' },
   { url: 'styles.css', revision: '1' },
   { url: 'script.js', revision: '1' },
   { url: 'icons/icon-192.png', revision: '1' },
@@ -20,7 +23,7 @@ precacheAndRoute([
 ]);
 
 // -----------------------------
-// Cache navigation (pages)
+// Cache navigation requests (pages)
 // -----------------------------
 registerRoute(
   ({ request }) => request.mode === 'navigate',
@@ -33,7 +36,7 @@ registerRoute(
 );
 
 // -----------------------------
-// Cache assets (CSS, JS, images)
+// Cache CSS, JS, images
 // -----------------------------
 registerRoute(
   ({ request }) =>
@@ -55,7 +58,12 @@ registerRoute(
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('offline.html'))
+      fetch(event.request).catch(async () => {
+        const cache = await caches.open('pages-cache');
+        // Try to return the requested page from cache
+        const cachedResponse = await cache.match(event.request);
+        return cachedResponse || caches.match('offline.html');
+      })
     );
   }
 });
