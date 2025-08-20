@@ -1,112 +1,44 @@
 {
-  "name": "HPSA Livestock &amp;amp; Agriculture",
-  "short_name": "HPSA",
-  "id": "/hpsa-app-livestock-and-agriculture/",
-  "start_url": "/hpsa-app-livestock-and-agriculture/index.html",
-  "scope": "/hpsa-app-livestock-and-agriculture/",
-  "scope_extensions": [
-    {
-      "origin": "https://ziphozonkemaphumulo83-svg.github.io"
-    }
-  ],
+  "name": "HPSA App - Livestock & Agriculture",
+  "short_name": "HPSA App",
+  "id": "hpsa-app",
+  "description": "Offline-ready app for livestock, agriculture, census and sales management.",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#795548",
-  "description": "HPSA Southern Africa livestock and agriculture app for census, sales, and reports. Works offline as a PWA with full sync support.",
-  "categories": [
-    "productivity",
-    "business",
-    "utilities",
-    "education"
-  ],
-  "dir": "ltr",
-  "lang": "en",
+  "categories": ["productivity", "business", "utilities"],
+
   "icons": [
-    {
-      "src": "icons/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icons/icon-256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png"
+      "src": "icons/icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/screenshot1.png",
-      "sizes": "1080x1920",
-      "type": "image/png"
+      "purpose": "any"
     },
     {
-      "src": "screenshots/screenshot2.png",
-      "sizes": "1080x1920",
-      "type": "image/png"
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "Open Census",
-      "short_name": "Census",
-      "description": "Go directly to census page",
-      "url": "census.html",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    },
-    {
-      "name": "Sales Reports",
-      "short_name": "Reports",
-      "description": "Go directly to sales report page",
-      "url": "sales-report.html",
-      "icons": [
-        {
-          "src": "icons/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ]
+
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }
