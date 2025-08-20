@@ -248,6 +248,12 @@ document.getElementById("registerForm").addEventListener("submit", async e=>{
   }catch(err){ showToast(err.message); }
 });
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(() => console.log('Service Worker Registered'))
+    .catch(err => console.warn('SW Registration Failed:', err));
+}
+
 // Reset password
 window.showResetPopup=()=>document.getElementById("resetModal").classList.remove("hidden");
 window.closeResetPopup=()=>document.getElementById("resetModal").classList.add("hidden");
@@ -258,11 +264,6 @@ window.sendPasswordReset=()=>{
 };
 
 window.showLogin=showLogin; window.showRegister=showRegister;
-
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
 
 </script>
 </body>

@@ -3,49 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline</title>
+  <title>Offline - HPSA</title>
   <link rel="stylesheet" href="styles.css">
   <style>
     body {
       font-family: 'Uber Move', sans-serif;
       text-align: center;
       padding: 10vh 20px;
-      background: #f8f8f8;
-      color: #333;
+      background: #000;
+      color: #f2e9db;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
     }
+
+    img {
+      width: 100px;
+      margin-bottom: 20px;
+    }
+
     h1 {
-      color: #795548;
+      color: #d19c72;
       font-size: 2rem;
       margin-bottom: 16px;
     }
+
     p {
       font-size: 1rem;
       margin-bottom: 24px;
+      max-width: 320px;
     }
+
     a {
       display: inline-block;
       padding: 12px 24px;
-      background: #795548;
+      background: #774936;
       color: #fff;
       text-decoration: none;
       border-radius: 8px;
       font-weight: bold;
       transition: background 0.3s ease;
     }
+
     a:hover {
-      background: #5d4037;
+      background: #5e3729;
     }
   </style>
 </head>
 <body>
-  <main role="main">
+  <img src="zogo.png" alt="HPSA Logo">
+  <main role="main" aria-live="polite">
     <h1>📴 You are offline</h1>
-    <p>Sorry, this page is not available while offline.</p>
+    <p>Sorry, this page is not available while offline. All app data is cached and you can continue your work once you're back online.</p>
     <a href="index.html">Go Back Home</a>
   </main>
 </body>
