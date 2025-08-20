@@ -169,19 +169,9 @@
       document.getElementById("date").value = new Date().toISOString().split("T")[0];
 
       if (captured && saved.participant) {
-        showProfileHeader(saved);
-        profileForm.classList.add("hidden");
-        censusSection.classList.remove("hidden");
+        // Go straight to sensus-household if profile exists
+        window.location.href = "sensus-household.html";
       }
-    }
-
-    function showProfileHeader(p) {
-      profileHeader.classList.remove("hidden");
-      profileHeader.innerHTML = `
-        <strong>${p.participant}</strong> | ${p.projectCode}<br>
-        📍 ${p.village} | 💧 ${p.dipTank}<br>
-        📱 ${p.cellNumber} | 👩 ${p.cahwName}
-      `;
     }
 
     window.saveProfile = function () {
@@ -204,45 +194,16 @@
       localStorage.setItem("censusUserProfile", JSON.stringify(profile));
       sessionStorage.setItem("profileCaptured", "true");
 
-      showProfileHeader(profile);
-      profileForm.classList.add("hidden");
-      censusSection.classList.remove("hidden");
+      showToast("✅ Profile saved. Redirecting...");
+
+      // Go to sensus-household after saving
+      setTimeout(() => window.location.href = "sensus-household.html", 800);
     };
-
-    window.submitCensus = async function () {
-      const requiredFields = [
-        "municipalNumber", "date", "farmerName", "farmerCell",
-        "male", "female", "youth", "adult", "disability",
-        "cows", "cowsUsed", "cowsSold", "cowsStolen", "cowsDied"
-      ];
-
-      const data = {};
-      for (let id of requiredFields) {
-        const val = document.getElementById(id).value.trim();
-        if (!val) {
-          showToast(`⚠️ ${id.replace(/([A-Z])/g, ' $1')} is required`);
-          return;
-        }
-        // store numbers as numbers
-        data[id] = isNaN(val) ? val : Number(val);
-      }
-
-      const profile = JSON.parse(localStorage.getItem("censusUserProfile") || "{}");
-      const fullRecord = { ...profile, ...data, timestamp: new Date().toISOString() };
-
-      // Save locally
-      sessionStorage.setItem("censusStep1", JSON.stringify(fullRecord));
-
-      // Attempt Firestore save
-      try {
-        await addDoc(collection(db, "census"), fullRecord);
-        showToast("✅ Saved online. Redirecting...");
-      } catch (err) {
-        console.warn("Offline save only:", err);
-        showToast("⚠️ Saved locally (offline). Redirecting...");
-      }
-
-      setTimeout(() => window.location.href = "sensus-household.html", 1200);
+    
+    window.submitCensus = function() {
+      // This section will rarely be used as the page now always redirects
+      showToast("Redirecting...");
+      setTimeout(() => window.location.href = "sensus-household.html", 800);
     };
 
     initPage();
