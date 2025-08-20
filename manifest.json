@@ -1,36 +1,24 @@
 {
-  "id": "com.zipho.hpsa",
   "name": "HPSA Livestock & Agriculture",
   "short_name": "HPSA",
-  "start_url": "./index.html",
-  "scope": "./",
+  "id": "/hpsa-app-livestock-and-agriculture/",
+  "start_url": "/hpsa-app-livestock-and-agriculture/index.html",
+  "scope": "/hpsa-app-livestock-and-agriculture/",
+  "scope_extensions": [
+    { "origin": "https://ziphozonkemaphumulo83-svg.github.io" }
+  ],
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#795548",
-  "orientation": "portrait",
-  "description": "HPSA App is an offline-capable data collection tool for health surveys",
-  "dir": "ltr",
-  "lang": "en-US",
-  "iarc_rating_id": "iARC-EXAMPLE-12345",
-  "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "id": "com.zipho.hpsa",
-      "url": "https://play.google.com/store/apps/details?id=com.zipho.hpsa"
-    }
-  ],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "categories": ["health", "agriculture", "productivity"],
+  "description": "HPSA Southern Africa livestock and agriculture app.",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ],
-  "screenshots": [
-    { "src": "screenshots/1.png", "sizes": "540x720", "type": "image/png", "platform": "web" },
-    { "src": "screenshots/2.png", "sizes": "540x720", "type": "image/png", "platform": "web" },
-    { "src": "screenshots/3.png", "sizes": "540x720", "type": "image/png", "platform": "web" }
+    { "src": "icons/icon-72.png", "sizes": "72x72", "type": "image/png" },
+    { "src": "icons/icon-96.png", "sizes": "96x96", "type": "image/png" },
+    { "src": "icons/icon-128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "icons/icon-384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
