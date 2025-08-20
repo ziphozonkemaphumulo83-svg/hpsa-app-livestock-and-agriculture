@@ -15,7 +15,6 @@
       justify-content: center;
       min-height: 100vh;
     }
-
     .container {
       width: 100%;
       max-width: 480px;
@@ -24,49 +23,25 @@
       padding: 20px;
       box-shadow: 0 0 24px rgba(255, 255, 255, 0.05);
     }
-
     h1 {
       text-align: center;
       font-size: 22px;
       margin-bottom: 20px;
     }
-
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 12px;
     }
-
     .kpi-card {
       background: #222;
       padding: 14px;
       border-radius: 12px;
     }
-
-    .kpi-title {
-      color: #bbb;
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-    }
-
-    .kpi-value {
-      font-size: 1.3rem;
-      font-weight: bold;
-      color: #fff;
-    }
-
-    .kpi-subtext {
-      font-size: 0.75rem;
-      color: #888;
-    }
-
-    .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
+    .kpi-title { color: #bbb; font-size: 0.9rem; margin-bottom: 4px; }
+    .kpi-value { font-size: 1.3rem; font-weight: bold; color: #fff; }
+    .kpi-subtext { font-size: 0.75rem; color: #888; }
+    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
     button {
       padding: 12px;
       font-size: 15px;
@@ -77,11 +52,7 @@
       font-weight: bold;
       cursor: pointer;
     }
-
-    button:hover {
-      background: #5e3729;
-    }
-
+    button:hover { background: #5e3729; }
     .toast {
       display: none;
       background: #774936;
@@ -95,7 +66,6 @@
       font-size: 14px;
       z-index: 999;
     }
-
     .profile-header {
       background: #222;
       padding: 10px 14px;
@@ -104,7 +74,6 @@
       text-align: center;
       font-size: 0.9rem;
     }
-
     .modal-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -115,7 +84,6 @@
       justify-content: center;
       z-index: 9999;
     }
-
     .modal-content {
       background: #222;
       padding: 20px;
@@ -127,7 +95,6 @@
       flex-direction: column;
       gap: 10px;
     }
-
     .modal-content input {
       padding: 10px;
       border: none;
@@ -135,7 +102,6 @@
       color: white;
       border-radius: 8px;
     }
-
     .summary-block {
       background: #222;
       margin-top: 30px;
@@ -145,19 +111,13 @@
       font-size: 0.95rem;
       color: #eee;
     }
-
     .summary-block h2 {
       font-size: 1.2rem;
       color: #f2d0b5;
       text-align: center;
       margin: 0 0 12px;
     }
-
-    .summary-block ul {
-      padding: 0;
-      list-style: none;
-    }
-
+    .summary-block ul { padding: 0; list-style: none; }
     .summary-block li {
       margin-bottom: 6px;
       display: flex;
@@ -188,10 +148,8 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast" class="toast"></div>
 
-<!-- Filter Modal -->
 <div id="filterModal" class="modal-overlay" style="display:none;">
   <div class="modal-content">
     <label id="modalLabel" style="color:white;">Enter Filter Value</label>
@@ -203,7 +161,6 @@
   </div>
 </div>
 
-<!-- Logout Modal -->
 <div id="logoutConfirm" class="modal-overlay" style="display:none;">
   <div class="modal-content">
     <p style="color: #f2d0b5;">Are you sure you want to logout?</p>
@@ -231,7 +188,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-enableIndexedDbPersistence(db).catch(() => {});
+enableIndexedDbPersistence(db).catch(console.warn);
 
 const toast = document.getElementById("toast");
 function showToast(msg) {
@@ -240,180 +197,174 @@ function showToast(msg) {
   setTimeout(() => (toast.style.display = "none"), 2500);
 }
 
+function parseNumber(value) { return Number(value) || 0; }
+
 function loadProfileHeader() {
   const profileData = JSON.parse(localStorage.getItem("censusUserProfile"));
   const header = document.getElementById("profileHeader");
-  if (profileData && profileData.projectCode) {
-    header.innerHTML = `<h2 style="margin:0; color:#fff;">Project Code: ${profileData.projectCode}</h2>`;
+  if (profileData) {
+    header.innerHTML = `
+      <h2>Project Code: ${profileData.projectCode || "-"}</h2>
+      <p>Participant: ${profileData.participant || "-"}</p>
+      <p>Village: ${profileData.village || "-"}</p>
+      <p>Dip Tank: ${profileData.dipTank || "-"}</p>
+    `;
   } else {
     header.innerHTML = `<p style="color:#ccc; font-style:italic;">No profile found</p>`;
   }
 }
 
 async function fetchAllData() {
-  const snapshot = await getDocs(collection(db, "censusData"));
+  const snapshot = await getDocs(collection(db, "sensusData"));
   return snapshot.docs.map(doc => doc.data());
 }
 
 function analyzeData(data) {
-  const sum = key => data.reduce((t, d) => t + (+d[key] || 0), 0);
-  const avg = key => (sum(key)/data.length).toFixed(1);
-  return {
+  const sum = key => data.reduce((t,d) => t + parseNumber(d[key]), 0);
+  const avg = key => data.length ? (sum(key)/data.length).toFixed(1) : 0;
+
+  const stats = {
     count: data.length,
-    cows: sum("cows"),
     goats: sum("goats"),
     chickens: sum("chickens"),
-    male: sum("male"),
-    female: sum("female"),
-    youth: sum("youth"),
-    adult: sum("adult"),
-    disabled: sum("disability"),
-    goatStolen: sum("goatsStolen"),
-    goatDied: sum("goatsDied"),
     kidsBorn: sum("kidsBorn"),
     kidsSurvived: sum("kidsSurvived"),
-    chickenStolen: sum("chickensStolen"),
-    chickenDied: sum("chickensDied"),
-    cowStolen: sum("cowsStolen"),
-    avgCows: avg("cows"),
+    goatsStolen: sum("goatsStolen"),
+    goatsDied: sum("goatsDied"),
+    chickensStolen: sum("chickensStolen"),
+    chickensDied: sum("chickensDied"),
     avgGoats: avg("goats"),
-    avgChickens: avg("chickens"),
-    goatTheftRate: sum("goats") ? ((sum("goatsStolen")/sum("goats"))*100).toFixed(1)
-
-    };
-  }
-
-  function renderKPIs(stats) {
-    const grid = document.getElementById("kpiGrid");
-    grid.innerHTML = "";
-    const card = (label, value, sub = "") => {
-      const div = document.createElement("div");
-      div.className = "kpi-card";
-      div.innerHTML = `<div class="kpi-title">${label}</div><div class="kpi-value">${value}</div><div class="kpi-subtext">${sub}</div>`;
-      return div;
-    };
-
-    grid.append(
-      card("Households", stats.count),
-      card("Cows", stats.cows),
-      card("Goats", stats.goats),
-      card("Chickens", stats.chickens),
-      card("Males", stats.male),
-      card("Females", stats.female),
-      card("Youth", stats.youth),
-      card("Adults", stats.adult),
-      card("Disabled", stats.disabled),
-      card("Goat Theft", stats.goatStolen, `Rate: ${stats.goatTheftRate}%`),
-      card("Goat Deaths", stats.goatDied, `Mortality: ${stats.goatMortalityRate}%`),
-      card("Kid Survival", stats.kidsSurvived, `Rate: ${stats.kidSurvivalRate}%`),
-      card("Chicken Theft", stats.chickenStolen, `Rate: ${stats.chickenTheftRate}%`),
-      card("Chicken Deaths", stats.chickenDied, `Rate: ${stats.chickenMortalityRate}%`),
-      card("Avg Cows/HH", stats.avgCows),
-      card("Avg Goats/HH", stats.avgGoats),
-      card("Avg Chickens/HH", stats.avgChickens)
-    );
-  }
-
-  function renderSummary(stats) {
-    const block = document.getElementById("summaryBlock");
-    const list = document.getElementById("summaryList");
-    list.innerHTML = "";
-    const items = [
-      ["Total Households", stats.count],
-      ["Total People", stats.male + stats.female],
-      ["Cows per Household", stats.avgCows],
-      ["Goats per Household", stats.avgGoats],
-      ["Chickens per Household", stats.avgChickens],
-      ["Goat Theft Rate", `${stats.goatTheftRate}%`],
-      ["Goat Mortality Rate", `${stats.goatMortalityRate}%`],
-      ["Kid Survival Rate", `${stats.kidSurvivalRate}%`],
-      ["Chicken Theft Rate", `${stats.chickenTheftRate}%`],
-      ["Chicken Mortality Rate", `${stats.chickenMortalityRate}%`]
-    ];
-
-    items.forEach(([label, value]) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
-      list.appendChild(li);
-    });
-
-    block.style.display = "block";
-  }
-
-  let currentFilterField = "";
-  window.submitFilter = async function () {
-    const val = document.getElementById("filterInput").value.trim().toLowerCase();
-    closeModal();
-    if (!val) return showToast("No value entered");
-    const all = await fetchAllData();
-    const filtered = all.filter(item => (item[currentFilterField] || "").toLowerCase() === val);
-    if (!filtered.length) return showToast(`No entries for ${val}`);
-    const stats = analyzeData(filtered);
-    renderKPIs(stats);
-    renderSummary(stats);
+    avgChickens: avg("chickens")
   };
 
-  window.closeModal = () => document.getElementById("filterModal").style.display = "none";
-  document.getElementById("filterDipBtn").onclick = () => openModal("Dip Tank", "dipTank");
-  document.getElementById("filterParticipantBtn").onclick = () => openModal("Participant", "participant");
-  document.getElementById("filterVillageBtn").onclick = () => openModal("Village", "village");
-  document.getElementById("clearFilterBtn").onclick = async () => {
-    const all = await fetchAllData();
-    const stats = analyzeData(all);
-    renderKPIs(stats);
-    renderSummary(stats);
-    showToast("Filters cleared");
-  };
-  const openModal = (label, field) => {
-    currentFilterField = field;
-    document.getElementById("modalLabel").textContent = `Enter ${label}`;
-    document.getElementById("filterInput").value = "";
-    document.getElementById("filterModal").style.display = "flex";
-  };
+  stats.goatTheftRate = stats.goats ? ((stats.goatsStolen / stats.goats) * 100).toFixed(1) : 0;
+  stats.goatMortalityRate = stats.goats ? ((stats.goatsDied / stats.goats) * 100).toFixed(1) : 0;
+  stats.kidSurvivalRate = stats.kidsBorn ? ((stats.kidsSurvived / stats.kidsBorn) * 100).toFixed(1) : 0;
+  stats.chickenTheftRate = stats.chickens ? ((stats.chickensStolen / stats.chickens) * 100).toFixed(1) : 0;
+  stats.chickenMortalityRate = stats.chickens ? ((stats.chickensDied / stats.chickens) * 100).toFixed(1) : 0;
 
-  document.getElementById("logoutBtn").onclick = () => {
-    document.getElementById("logoutConfirm").style.display = "flex";
-  };
-  window.confirmLogout = () => {
-    signOut(auth).then(() => {
-      localStorage.clear();
-      sessionStorage.clear();
-      window.location.href = "index.html";
-    }).catch(() => showToast("Logout failed"));
-  };
-  window.closeLogoutPopup = () => {
-    document.getElementById("logoutConfirm").style.display = "none";
-  };
+  return stats;
+}
 
-  document.getElementById("exportBtn").onclick = async () => {
-    const all = await fetchAllData();
-    if (!all.length) return showToast("No data to export.");
-    const exportFields = [
-      "participant", "projectCode", "village", "dipTank", "cellNumber", "cahwName",
-      "municipalNumber", "date", "farmerName", "farmerCell", "male", "female", "youth", "adult", "disability",
-      "cows", "cowsUsed", "cowsSold", "cowsStolen", "cowsDied", "goats", "goatsUsed", "goatsSold", "goatsStolen", "goatsDied",
-      "kidsBorn", "kidsSurvived", "chickens", "chickensUsed", "chickensSold", "chickensStolen", "chickensDied",
-      "goatDiseases", "vaccinated", "medicines", "feed", "timestamp"
-    ];
-    const rows = [exportFields.join(",")];
-    all.forEach(entry => {
-      const row = exportFields.map(key => `"${(entry[key] ?? "").toString().replace(/"/g, '""')}"`);
-      rows.push(row.join(","));
-    });
-    const blob = new Blob([rows.join("\n")], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "census_report.csv";
-    a.click();
+function renderKPIs(stats) {
+  const grid = document.getElementById("kpiGrid");
+  grid.innerHTML = "";
+  const card = (label,value,sub="")=>{
+    const div = document.createElement("div");
+    div.className = "kpi-card";
+    div.innerHTML = `<div class="kpi-title">${label}</div><div class="kpi-value">${value}</div><div class="kpi-subtext">${sub}</div>`;
+    return div;
   };
+  grid.append(
+    card("Households", stats.count),
+    card("Goats", stats.goats),
+    card("Chickens", stats.chickens),
+    card("Goat Theft", stats.goatsStolen, `Rate: ${stats.goatTheftRate}%`),
+    card("Goat Deaths", stats.goatsDied, `Mortality: ${stats.goatMortalityRate}%`),
+    card("Kid Survival", stats.kidsSurvived, `Rate: ${stats.kidSurvivalRate}%`),
+    card("Chicken Theft", stats.chickensStolen, `Rate: ${stats.chickenTheftRate}%`),
+    card("Chicken Deaths", stats.chickensDied, `Rate: ${stats.chickenMortalityRate}%`),
+    card("Avg Goats/HH", stats.avgGoats),
+    card("Avg Chickens/HH", stats.avgChickens)
+  );
+}
 
-  // Initialize
-  loadProfileHeader();
-  fetchAllData().then(data => {
-    const stats = analyzeData(data);
-    renderKPIs(stats);
-    renderSummary(stats);
+function renderSummary(stats) {
+  const block = document.getElementById("summaryBlock");
+  const list = document.getElementById("summaryList");
+  list.innerHTML = "";
+  const items = [
+    ["Total Households", stats.count],
+    ["Total Goats", stats.goats],
+    ["Total Chickens", stats.chickens],
+    ["Goat Theft Rate", `${stats.goatTheftRate}%`],
+    ["Goat Mortality Rate", `${stats.goatMortalityRate}%`],
+    ["Kid Survival Rate", `${stats.kidSurvivalRate}%`],
+    ["Chicken Theft Rate", `${stats.chickenTheftRate}%`],
+    ["Chicken Mortality Rate", `${stats.chickenMortalityRate}%`],
+    ["Avg Goats/HH", stats.avgGoats],
+    ["Avg Chickens/HH", stats.avgChickens]
+  ];
+  items.forEach(([label,value])=>{
+    const li=document.createElement("li");
+    li.innerHTML=`<span>${label}</span><strong>${value}</strong>`;
+    list.appendChild(li);
   });
+  block.style.display = "block";
+}
+
+let currentFilterField = "";
+window.submitFilter = async function() {
+  const val = document.getElementById("filterInput").value.trim().toLowerCase();
+  closeModal();
+  if(!val) return showToast("No value entered");
+  const all = await fetchAllData();
+  const filtered = all.filter(item => ((item[currentFilterField] || "").toString().toLowerCase()) === val);
+  if(!filtered.length) return showToast(`No entries for ${val}`);
+  const stats = analyzeData(filtered);
+  renderKPIs(stats);
+  renderSummary(stats);
+};
+
+window.closeModal = () => document.getElementById("filterModal").style.display="none";
+const openModal = (label,field)=>{
+  currentFilterField = field;
+  document.getElementById("modalLabel").textContent = `Enter ${label}`;
+  document.getElementById("filterInput").value="";
+  document.getElementById("filterModal").style.display="flex";
+};
+
+document.getElementById("filterDipBtn").onclick = ()=>openModal("Dip Tank","dipTank");
+document.getElementById("filterParticipantBtn").onclick = ()=>openModal("Participant","participant");
+document.getElementById("filterVillageBtn").onclick = ()=>openModal("Village","village");
+document.getElementById("clearFilterBtn").onclick = async ()=>{
+  const all = await fetchAllData();
+  const stats = analyzeData(all);
+  renderKPIs(stats);
+  renderSummary(stats);
+  showToast("Filters cleared");
+};
+
+document.getElementById("logoutBtn").onclick = ()=>document.getElementById("logoutConfirm").style.display="flex";
+window.confirmLogout = ()=>{
+  signOut(auth).then(()=>{
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href="index.html";
+  }).catch(()=>showToast("Logout failed"));
+};
+window.closeLogoutPopup = ()=>document.getElementById("logoutConfirm").style.display="none";
+
+document.getElementById("exportBtn").onclick = async ()=>{
+  const all = await fetchAllData();
+  if(!all.length) return showToast("No data to export.");
+  const exportFields = [
+    "participant","projectCode","village","dipTank","cellNumber","cahwName",
+    "municipalNumber","date","farmerName","farmerCell","male","female","youth","adult","disability",
+    "cows","cowsUsed","cowsSold","cowsStolen","cowsDied",
+    "goats","goatsUsed","goatsSold","goatsStolen","goatsDied",
+    "kidsBorn","kidsSurvived","chickens","chickensUsed","chickensSold","chickensStolen","chickensDied",
+    "goatDiseases","vaccinated","medicines","feed","createdAt"
+  ];
+  const rows=[exportFields.join(",")];
+  all.forEach(entry=>{
+    const row = exportFields.map(k=>`"${(entry[k]??"").toString().replace(/"/g,'""')}"`);
+    rows.push(row.join(","));
+  });
+  const blob = new Blob([rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download="census_report.csv";
+  a.click();
+};
+
+// Initialize
+loadProfileHeader();
+fetchAllData().then(data=>{
+  const stats = analyzeData(data);
+  renderKPIs(stats);
+  renderSummary(stats);
+});
 </script>
 </body>
 </html>
