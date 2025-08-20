@@ -1,11 +1,13 @@
 {
-  "name": "HPSA Livestock & Agriculture",
+  "name": "HPSA Livestock &amp; Agriculture",
   "short_name": "HPSA",
   "id": "/hpsa-app-livestock-and-agriculture/",
   "start_url": "/hpsa-app-livestock-and-agriculture/index.html",
   "scope": "/hpsa-app-livestock-and-agriculture/",
   "scope_extensions": [
-    { "origin": "https://ziphozonkemaphumulo83-svg.github.io" }
+    {
+      "origin": "https://ziphozonkemaphumulo83-svg.github.io"
+    }
   ],
   "display": "standalone",
   "orientation": "portrait",
@@ -87,14 +89,24 @@
       "short_name": "Census",
       "description": "Go directly to census page",
       "url": "census.html",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Sales Reports",
       "short_name": "Reports",
       "description": "Go directly to sales report page",
       "url": "sales-report.html",
-      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }
