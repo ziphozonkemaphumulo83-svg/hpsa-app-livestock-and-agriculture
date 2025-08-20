@@ -16,8 +16,8 @@
   "related_applications": [
     {
       "platform": "play",
-      "id": "com.yourcompany.hpsa",
-      "url": "https://play.google.com/store/apps/details?id=com.yourcompany.hpsa"
+      "id": "com.zipho.hpsa",
+      "url": "https://play.google.com/store/apps/details?id=com.zipho.hpsa"
     }
   ],
   "launch_handler": {
@@ -29,13 +29,8 @@
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
   "screenshots": [
-    { "src": "screenshots/1.png", "sizes": "540x720", "type": "image/png" },
-    { "src": "screenshots/2.png", "sizes": "540x720", "type": "image/png" },
-    { "src": "screenshots/3.png", "sizes": "540x720", "type": "image/png" }
-  ],
-  "scope_extensions": [
-    "https://ziphozonkemaphumulo83-svg.github.io/hpsa-app-livestock-and-agriculture/pages/",
-    "https://ziphozonkemaphumulo83-svg.github.io/hpsa-app-livestock-and-agriculture/forms/"
+    { "src": "screenshots/1.png", "sizes": "540x720", "type": "image/png", "platform": "web" },
+    { "src": "screenshots/2.png", "sizes": "540x720", "type": "image/png", "platform": "web" },
+    { "src": "screenshots/3.png", "sizes": "540x720", "type": "image/png", "platform": "web" }
   ]
 }
-
