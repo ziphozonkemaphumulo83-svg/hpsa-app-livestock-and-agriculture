@@ -6,15 +6,47 @@
   <title>Offline</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; background: #f8f8f8; color: #333; }
-    h1 { color: #795548; }
-    a { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #795548; color: #fff; text-decoration: none; border-radius: 5px; }
-    a:hover { background: #5d4037; }
+    body {
+      font-family: 'Uber Move', sans-serif;
+      text-align: center;
+      padding: 10vh 20px;
+      background: #f8f8f8;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #795548;
+      font-size: 2rem;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+    a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #795548;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    a:hover {
+      background: #5d4037;
+    }
   </style>
 </head>
 <body>
-  <h1>You are offline</h1>
-  <p>Sorry, this page is not available while offline.</p>
-  <a href="index.html">Go Back Home</a>
+  <main role="main">
+    <h1>📴 You are offline</h1>
+    <p>Sorry, this page is not available while offline.</p>
+    <a href="index.html">Go Back Home</a>
+  </main>
 </body>
 </html>
