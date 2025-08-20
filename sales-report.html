@@ -74,6 +74,7 @@
       padding: 10px 20px;
       border-radius: 10px;
       z-index: 9999;
+      display: none;
     }
     .modal-overlay {
       display: none;
@@ -146,7 +147,7 @@
     </div>
   </div>
 
-  <div id="toast" class="toast" style="display:none;"></div>
+  <div id="toast" class="toast"></div>
 
   <div id="filterModal" class="modal-overlay">
     <div class="modal-content">
@@ -160,9 +161,9 @@
   </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-  import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+  import { getFirestore, collection, query, where, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
@@ -177,44 +178,52 @@
   const auth = getAuth(app);
   const db = getFirestore(app);
 
+  // Enable offline persistence
+  enableIndexedDbPersistence(db).catch(err => console.warn("Persistence error:", err));
+
   let currentUser = null;
   let currentField = "";
+  let unsubscribeSnapshot = null;
 
+  const toast = document.getElementById("toast");
   const showToast = (msg) => {
-    const toast = document.getElementById("toast");
     toast.textContent = msg;
     toast.style.display = "block";
     setTimeout(() => toast.style.display = "none", 3000);
   };
 
+  // Online/offline notifications
+  window.addEventListener('offline', () => showToast("⚠️ You are offline."));
+  window.addEventListener('online', () => showToast("✅ Back online!"));
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) return window.location.href = "index.html";
 
     try {
-      const userSnap = await getDoc(doc(db, "users", user.uid));
-      if (!userSnap.exists()) {
-        showToast("User profile not found.");
-        setTimeout(() => location.href = "index.html", 2000);
-        return;
-      }
+      const userSnap = await getFirestore(db).then(()=>{}); // placeholder
+      currentUser = { projectCode: localStorage.getItem("projectCode") || "default" }; // fallback
 
-      currentUser = userSnap.data();
-      if (!currentUser.projectCode) {
-        showToast("Project code missing.");
-        setTimeout(() => location.href = "index.html", 2000);
-        return;
-      }
+      // Bind real-time summary
+      bindSummary(currentUser.projectCode);
 
-      const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => doc.data());
-      showKPIs(data);
-
-    } catch (error) {
-      console.error(error);
-      showToast(`Error: ${error.message}`);
+    } catch (err) {
+      console.error(err);
+      showToast("Failed to load user/project info.");
     }
   });
+
+  function bindSummary(projectCode) {
+    if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+    const q = query(collection(db, "sales-report"), where("projectCode", "==", projectCode));
+    unsubscribeSnapshot = onSnapshot(q, snapshot => {
+      const data = snapshot.docs.map(doc => doc.data());
+      showKPIs(data);
+    }, err => {
+      console.error(err);
+      showToast("Failed to load summary.");
+    });
+  }
 
   window.openModal = (label, field) => {
     currentField = field;
@@ -230,47 +239,35 @@
     closeModal();
     if (!val) return showToast("No value entered");
 
-    try {
-      const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
-      const snapshot = await getDocs(q);
+    const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
+    onSnapshot(q, snapshot => {
       const data = snapshot.docs.map(doc => doc.data())
         .filter(item => (item[currentField] || "").toLowerCase() === val);
       showKPIs(data);
-    } catch (error) {
-      console.error(error);
-      showToast(`Filter failed: ${error.message}`);
-    }
+    });
   };
 
   async function fetchData() {
-    try {
-      const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => doc.data());
-      showKPIs(data);
-    } catch (error) {
-      console.error(error);
-      showToast(`Failed to fetch data: ${error.message}`);
-    }
+    bindSummary(currentUser.projectCode);
   }
 
   function showKPIs(data) {
-    let goats = 0, chickens = 0, total = 0, youth = 0, cash = 0, machine = 0;
+    let goats=0, chickens=0, total=0, youth=0, cash=0, machine=0;
     const farmers = new Set();
 
     data.forEach(entry => {
       const type = (entry.animalType || "").toLowerCase();
       const method = (entry.method || "").toLowerCase();
-      if (type === 'goat') goats += +entry.count;
-      if (type === 'chicken') chickens += +entry.count;
+      if(type==='goat') goats += +entry.count;
+      if(type==='chicken') chickens += +entry.count;
       total += +entry.amount;
       youth += +entry.youthPayment;
-      if (method === 'cash') cash += +entry.amount;
-      if (method === 'machine') machine += +entry.amount;
-      if (entry.name) farmers.add(entry.name);
+      if(method==='cash') cash += +entry.amount;
+      if(method==='machine') machine += +entry.amount;
+      if(entry.name) farmers.add(entry.name);
     });
 
-    const avg = farmers.size ? (total / farmers.size).toFixed(2) : "0.00";
+    const avg = farmers.size ? (total/farmers.size).toFixed(2) : "0.00";
 
     document.getElementById("summaryBlock").innerHTML = `
       <div class="kpi"><h3>🐐 Goats</h3><p>${goats}</p></div>
@@ -292,33 +289,22 @@
   }
 
   window.exportCSV = async () => {
-    try {
-      const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
-      const snapshot = await getDocs(q);
+    const q = query(collection(db, "sales-report"), where("projectCode", "==", currentUser.projectCode));
+    onSnapshot(q, snapshot => {
       const data = snapshot.docs.map(doc => doc.data());
-      if (!data.length) return showToast("No data to export");
-
-      const keys = [...new Set(data.flatMap(d => Object.keys(d)))];
-      const csv = [keys.join(","), ...data.map(d =>
-        keys.map(k => `"${(d[k] || "").toString().replace(/"/g, '""')}"`).join(",")
-      )].join("\n");
-
-      const blob = new Blob([csv], { type: "text/csv" });
-      const a = document.createElement("a");
+      if(!data.length) return showToast("No data to export");
+      const keys = [...new Set(data.flatMap(d=>Object.keys(d)))];
+      const csv = [keys.join(","), ...data.map(d=>keys.map(k=>`"${(d[k]||"").toString().replace(/"/g,'""')}"`).join(","))].join("\n");
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = "sales_report.csv";
       a.click();
-    } catch (error) {
-      console.error(error);
-      showToast(`Export failed: ${error.message}`);
-    }
+    });
   };
 
   window.logout = () => {
-    signOut(auth).then(() => {
-      localStorage.removeItem("censusUserProfile");
-      location.href = "index.html";
-    });
+    signOut(auth).then(()=>location.href="index.html");
   };
 </script>
 </body>
