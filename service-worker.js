@@ -1,114 +1,93 @@
 // service-worker.js
-import { precacheAndRoute } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js';
-import { registerRoute } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-routing.prod.js';
-import { NetworkFirst, StaleWhileRevalidate } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-strategies.prod.js';
-import { ExpirationPlugin } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-expiration.prod.js';
-import { CacheableResponsePlugin } from 'https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-cacheable-response.prod.js';
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
+
+const CACHE = "pwabuilder-cache-v1";
+const offlineFallbackPage = "offline.html";
 
 // -----------------------------
-// Precache essential pages & assets
+// Install: cache offline.html + core pages
 // -----------------------------
-precacheAndRoute([
-  { url: 'offline.html', revision: '1' },
-  { url: 'index.html', revision: '1' },
-  { url: 'sales-summary.html', revision: '1' },
-  { url: 'sales-report.html', revision: '1' },
-  { url: 'sensus.html', revision: '1' },
-  { url: 'sensus-household.html', revision: '1' },
-  { url: 'sensus-report.html', revision: '1' },
-  { url: 'styles.css', revision: '1' },
-  { url: 'script.js', revision: '1' },
-  { url: 'icons/icon-192.png', revision: '1' },
-  { url: 'icons/icon-512.png', revision: '1' }
-]);
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => {
+      return cache.addAll([
+        offlineFallbackPage,
+        "index.html",
+        "sales-summary.html",
+        "sales-report.html",
+        "sensus.html",
+        "sensus-household.html",
+        "sensus-report.html",
+        "styles.css",
+        "script.js",
+        "icons/icon-192.png",
+        "icons/icon-512.png"
+      ]);
+    })
+  );
+  self.skipWaiting();
+});
 
 // -----------------------------
-// Cache navigation requests (pages)
+// Activate: clean old caches
 // -----------------------------
-registerRoute(
-  ({ request }) => request.mode === 'navigate',
-  new NetworkFirst({
-    cacheName: 'pages-cache',
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] })
-    ]
-  })
-);
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keyList) => {
+      return Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
 
 // -----------------------------
-// Cache CSS, JS, images
+// Fetch handler: Network first for pages, cache fallback
 // -----------------------------
-registerRoute(
-  ({ request }) =>
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'image',
-  new StaleWhileRevalidate({
-    cacheName: 'assets-cache',
-    plugins: [
-      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 7 * 24 * 60 * 60 }), // 7 days
-      new CacheableResponsePlugin({ statuses: [0, 200] })
-    ]
-  })
-);
-
-// -----------------------------
-// Offline fallback for navigation
-// -----------------------------
-self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(async () => {
-        const cache = await caches.open('pages-cache');
-        // Try to return the requested page from cache
-        const cachedResponse = await cache.match(event.request);
-        return cachedResponse || caches.match('offline.html');
+      (async () => {
+        try {
+          const preloadResp = await event.preloadResponse;
+          if (preloadResp) return preloadResp;
+
+          const networkResp = await fetch(event.request);
+          return networkResp;
+        } catch (error) {
+          const cache = await caches.open(CACHE);
+          return cache.match(event.request) || cache.match(offlineFallbackPage);
+        }
+      })()
+    );
+  } else {
+    // Cache-first for assets (CSS, JS, images)
+    event.respondWith(
+      caches.match(event.request).then((cachedResp) => {
+        return (
+          cachedResp ||
+          fetch(event.request).then((networkResp) => {
+            return caches.open(CACHE).then((cache) => {
+              cache.put(event.request, networkResp.clone());
+              return networkResp;
+            });
+          })
+        );
       })
     );
   }
 });
 
 // -----------------------------
-// Background Sync: offline form submissions
+// Support skipWaiting
 // -----------------------------
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-forms') {
-    event.waitUntil(syncFormsToServer());
-  }
-});
-
-async function syncFormsToServer() {
-  try {
-    console.log('[SW] Syncing forms to server...');
-    // TODO: Implement IndexedDB retrieval & submission logic
-  } catch (err) {
-    console.error('[SW] Form sync failed:', err);
-  }
-}
-
-// -----------------------------
-// Periodic Background Sync (optional)
-// -----------------------------
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'update-data') {
-    event.waitUntil(fetchLatestData());
-  }
-});
-
-async function fetchLatestData() {
-  try {
-    console.log('[SW] Fetching latest data...');
-    // TODO: Implement latest data caching
-  } catch (err) {
-    console.error('[SW] Periodic fetch failed:', err);
-  }
-}
-
-// -----------------------------
-// Skip waiting for new SW
-// -----------------------------
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
