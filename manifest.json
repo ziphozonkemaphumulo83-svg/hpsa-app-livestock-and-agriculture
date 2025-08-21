@@ -1,9 +1,8 @@
 {
-  "name": "HPSA App",
+  "name": "HPSA Livestock & Agriculture",
   "short_name": "HPSA",
-  "start_url": "index.html",
+  "start_url": "https://ziphozonkemaphumulo83-svg.github.io/hpsa-app-livestock-and-agriculture/",
   "scope": "./",
-  "description": "Offline-ready livestock and household census app for field data collection.",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#774936",
