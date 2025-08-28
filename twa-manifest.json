@@ -14,7 +14,6 @@
   "enableNotifications": true,
   "startUrl": "/index.html",
   "iconUrl": "https://ziphozonkemaphumulo83-svg.github.io/icons/icon-512x512.png",
-  "maskableIconUrl": "https://ziphozonkemaphumulo83-svg.github.io/icons/icon-512x512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "C:\\Users\\Student\\Desktop\\FINAL HPSA_APP\\android.keystore",
