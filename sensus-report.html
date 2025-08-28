@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Census Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #002C5F;
+  --navy-light: #00509E;
+  --cream: #FDFCFB;
+  --accent: #00C4B3;
+  --shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Uber Move',sans-serif;
+  min-height:100vh;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, var(--cream) 100%);
+  display:flex; justify-content:center; align-items:flex-start;
+  padding:20px; color:#111;
+}
+.container{
+  width:100%; max-width:520px;
+  background:var(--cream); border-radius:16px;
+  padding:30px 20px; box-shadow:var(--shadow); overflow:hidden; position:relative;
+  animation:slideUp 0.8s forwards; opacity:0; transform:translateY(20px);
+}
+@keyframes slideUp{to{opacity:1; transform:translateY(0);}}
+h1.section-title{text-align:center; font-size:22px; font-weight:800; margin-bottom:15px; color:var(--navy);}
+#offlineAlert{
+  display:none;
+  background:#e63946;
+  color:#fff;
+  text-align:center;
+  padding:10px;
+  border-radius:8px;
+  font-weight:700;
+  margin-bottom:15px;
+}
+.kpi-grid{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px;
+}
+.kpi-card{
+  background:#fff; color:var(--navy); border-radius:12px; padding:16px; text-align:center;
+  border:1px solid rgba(0,0,0,0.1); box-shadow:var(--shadow);
+}
+.kpi-title{ font-weight:600; font-size:0.85rem; margin-bottom:6px; color:#555; }
+.kpi-value{ font-size:1.3rem; font-weight:800; margin-bottom:4px; }
+.kpi-subtext{ font-size:0.75rem; color:#888; }
+.summary-block{
+  background:#fff; padding:16px; border-radius:14px; font-size:0.95rem;
+  color:var(--navy); border:1px solid rgba(0,0,0,0.1); box-shadow:var(--shadow); margin-bottom:15px;
+}
+.summary-block h2{ font-size:1.1rem; text-align:center; margin-bottom:12px; color:var(--accent); }
+.summary-block ul{padding:0; list-style:none;}
+.summary-block li{
+  display:flex; justify-content:space-between; margin-bottom:6px; padding-bottom:4px;
+  border-bottom:1px dashed #ccc;
+}
+.actions{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+.actions button{
+  padding:14px; font-size:15px; font-weight:700; border:none; border-radius:12px;
+  cursor:pointer; transition:all 0.2s; box-shadow:var(--shadow);
+}
+.actions button:hover{opacity:0.9;}
+.actions .btn-primary{background:var(--accent); color:#fff;}
+.actions .btn-secondary{background:#e5e5e5; color:#111;}
+.actions .btn-danger{background:#d9534f; color:#fff;}
+.actions .btn-secondary:hover{background:#d2b48c;}
+.actions .btn-danger:hover{background:#b52b27;}
+.toast{
+  display:none; background:var(--accent); color:white; padding:12px;
+  border-radius:10px; position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  font-size:14px; z-index:999;
+}
+/* Modal styling */
+.modal-overlay{
+  display:flex; justify-content:center; align-items:center;
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); z-index:9999;
+}
+.modal-content{
+  background:#fff; padding:20px; border-radius:12px; min-width:280px;
+  max-width:90%; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:12px;
+}
+.modal-content input{
+  padding:10px; font-size:14px; border-radius:8px; border:1px solid #ccc; width:100%;
+}
+.modal-content button{
+  padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer; transition:all 0.2s;
+}
+.modal-content button:hover{opacity:0.9;}
+.modal-content button:first-child{background:var(--accent); color:#fff;}
+.modal-content button:last-child{background:#e5e5e5; color:#111;}
+@media(max-width:480px){
+  .container{padding:22px 16px;}
+  .kpi-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1 class="section-title">📊 Census Dashboard</h1>
+  <div id="offlineAlert">⚠️ You are offline. Data will be saved locally and synced when back online.</div>
+  <div id="kpiGrid" class="kpi-grid"></div>
+  <div class="summary-block" id="summaryBlock" style="display:none;">
+    <h2>📈 Summary</h2>
+    <ul id="summaryList"></ul>
+  </div>
+  <div class="actions">
+    <button id="exportBtn" class="btn-primary">⬇ Export to CSV</button>
+    <button id="filterDipBtn" class="btn-primary">🔍 Filter by Dip Tank</button>
+    <button id="filterParticipantBtn" class="btn-primary">🔍 Filter by Participant</button>
+    <button id="filterVillageBtn" class="btn-primary">🔍 Filter by Village</button>
+    <button id="clearFilterBtn" class="btn-secondary">🔄 Clear Filter</button>
+    <button id="logoutBtn" class="btn-danger">🚪 Logout</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="filterModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <label id="modalLabel">Enter Filter Value</label>
+    <input type="text" id="filterInput" placeholder="Enter value..." />
+    <div style="display:flex; gap:10px;">
+      <button onclick="submitFilter()">Apply</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="logoutConfirm" class="modal-overlay" style="display:none;">
+  <div class="modal-content">
+    <p>Are you sure you want to logout?</p>
+    <div style="display:flex; gap:10px;">
+      <button onclick="confirmLogout()">Yes</button>
+      <button onclick="closeLogoutPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+  authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+  projectId: "hpsa-app-6b2d2",
+  storageBucket: "hpsa-app-6b2d2.appspot.com",
+  messagingSenderId: "445389782453",
+  appId: "1:445389782453:web:595647fa1038fab9886dfc"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const toast = document.getElementById("toast");
+const offlineAlert = document.getElementById("offlineAlert");
+function showToast(msg){ toast.textContent = msg; toast.style.display="block"; setTimeout(()=>toast.style.display="none",2500); }
+function updateOfflineStatus(){ offlineAlert.style.display = navigator.onLine ? "none" : "block"; }
+window.addEventListener("online", updateOfflineStatus);
+window.addEventListener("offline", updateOfflineStatus);
+updateOfflineStatus();
+
+function parseNumber(value){ return Number(value)||0; }
+
+let allData = [];
+
+async function fetchAllData(){ 
+  // fetch census entries
+  const censusSnap = await getDocs(collection(db,"sensusData"));
+  const censusData = censusSnap.docs.map(d=>d.data());
+
+  // fetch census users
+  const usersSnap = await getDocs(collection(db,"census-users"));
+  const userData = usersSnap.docs.map(d=>d.data());
+
+  // merge by participant (you can change to cellNumber or projectCode if that's more reliable)
+  allData = censusData.map(census => {
+    const user = userData.find(u => u.participant === census.participant) || {};
+    return { ...user, ...census }; // user fields + census fields in one row
+  });
+
+  const stats = analyzeData(allData);
+  renderKPIs(stats);
+  renderSummary(stats);
+}
+
+function analyzeData(data){
+  const sum = key=>data.reduce((t,d)=>t+parseNumber(d[key]),0);
+  const avg = key=>data.length? (sum(key)/data.length).toFixed(1):0;
+  const stats = {
+    count:data.length, goats:sum("goats"), chickens:sum("chickens"),
+    kidsBorn:sum("kidsBorn"), kidsSurvived:sum("kidsSurvived"),
+    goatsStolen:sum("goatsStolen"), goatsDied:sum("goatsDied"),
+    chickensStolen:sum("chickensStolen"), chickensDied:sum("chickensDied"),
+    avgGoats:avg("goats"), avgChickens:avg("chickens")
+  };
+  stats.goatTheftRate = stats.goats?((stats.goatsStolen/stats.goats)*100).toFixed(1):0;
+  stats.goatMortalityRate = stats.goats?((stats.goatsDied/stats.goats)*100).toFixed(1):0;
+  stats.kidSurvivalRate = stats.kidsBorn?((stats.kidsSurvived/stats.kidsBorn)*100).toFixed(1):0;
+  stats.chickenTheftRate = stats.chickens?((stats.chickensStolen/stats.chickens)*100).toFixed(1):0;
+  stats.chickenMortalityRate = stats.chickens?((stats.chickensDied/stats.chickens)*100).toFixed(1):0;
+  return stats;
+}
+
+function renderKPIs(stats){
+  const grid = document.getElementById("kpiGrid");
+  grid.innerHTML="";
+  const card=(l,v,s="")=>{
+    const div=document.createElement("div"); div.className="kpi-card";
+    div.innerHTML=`<div class="kpi-title">${l}</div><div class="kpi-value">${v}</div><div class="kpi-subtext">${s}</div>`;
+    return div;
+  };
+  grid.append(
+    card("Households",stats.count),
+    card("Goats",stats.goats),
+    card("Chickens",stats.chickens),
+    card("Goat Theft",stats.goatsStolen,`Rate: ${stats.goatTheftRate}%`),
+    card("Goat Deaths",stats.goatsDied,`Mortality: ${stats.goatMortalityRate}%`),
+    card("Kid Survival",stats.kidsSurvived,`Rate: ${stats.kidSurvivalRate}%`),
+    card("Chicken Theft",stats.chickensStolen,`Rate: ${stats.chickenTheftRate}%`),
+    card("Chicken Deaths",stats.chickensDied,`Rate: ${stats.chickenMortalityRate}%`),
+    card("Avg Goats/HH",stats.avgGoats),
+    card("Avg Chickens/HH",stats.avgChickens)
+  );
+}
+
+function renderSummary(stats){
+  const block=document.getElementById("summaryBlock");
+  const list=document.getElementById("summaryList"); list.innerHTML="";
+  const items=[
+    ["Total Households",stats.count],["Total Goats",stats.goats],["Total Chickens",stats.chickens],
+    ["Goat Theft Rate",`${stats.goatTheftRate}%`],["Goat Mortality Rate",`${stats.goatMortalityRate}%`],
+    ["Kid Survival Rate",`${stats.kidSurvivalRate}%`],["Chicken Theft Rate",`${stats.chickenTheftRate}%`],
+    ["Chicken Mortality Rate",`${stats.chickenMortalityRate}%`],["Avg Goats/HH",stats.avgGoats],["Avg Chickens/HH",stats.avgChickens]
+  ];
+  items.forEach(([l,v])=>{ const li=document.createElement("li"); li.innerHTML=`<span>${l}</span><strong>${v}</strong>`; list.appendChild(li); });
+  block.style.display="block";
+}
+
+// Filters
+let currentFilterField = "";
+window.submitFilter = async function() {
+  const val = document.getElementById("filterInput").value.trim().toLowerCase();
+  closeModal();
+  if(!val) return showToast("No value entered");
+  const filtered = allData.filter(item => ((item[currentFilterField] || "").toString().toLowerCase()) === val);
+  if(!filtered.length) return showToast(`No entries for ${val}`);
+  const stats = analyzeData(filtered);
+  renderKPIs(stats);
+  renderSummary(stats);
+};
+window.closeModal = () => document.getElementById("filterModal").style.display="none";
+const openModal = (label,field)=>{ currentFilterField = field;
+  document.getElementById("modalLabel").textContent = `Enter ${label}`;
+  document.getElementById("filterInput").value="";
+  document.getElementById("filterModal").style.display="flex";
+};
+document.getElementById("filterDipBtn").onclick = ()=>openModal("Dip Tank","dipTank");
+document.getElementById("filterParticipantBtn").onclick = ()=>openModal("Participant","participant");
+document.getElementById("filterVillageBtn").onclick = ()=>openModal("Village","village");
+document.getElementById("clearFilterBtn").onclick = ()=>fetchAllData();
+
+// Logout
+document.getElementById("logoutBtn").onclick = ()=>document.getElementById("logoutConfirm").style.display="flex";
+window.confirmLogout = ()=>{ signOut(auth).then(()=>{ localStorage.clear(); sessionStorage.clear(); window.location.href="index.html"; }).catch(()=>showToast("Logout failed")); };
+window.closeLogoutPopup = ()=>document.getElementById("logoutConfirm").style.display="none";
+
+// Export CSV
+document.getElementById("exportBtn").onclick = ()=>{
+  if(!allData.length) return showToast("No data to export.");
+
+  const exportFields=[
+  "uid","participant","projectCode","village","dipTank","cellNumber","cahwName", // user profile
+  "municipalNumber","date","farmerName","farmerCell", // census step 1
+  "male","female","youth","adult","disability",
+  "cows","cowsUsed","cowsSold","cowsStolen","cowsDied",
+  "goats","goatsUsed","goatsSold","goatsStolen","goatsDied",
+  "kidsBorn","kidsSurvived",
+  "chickens","chickensUsed","chickensSold","chickensStolen","chickensDied",
+  "goatDiseases","vaccinated","medicines","feed",
+  "createdAt"
+];
+
+  const rows=[exportFields.join(",")];
+  allData.forEach(entry=>{ const row = exportFields.map(k=>`"${(entry[k]??"").toString().replace(/"/g,'""')}"`); rows.push(row.join(",")); });
+  const blob = new Blob([rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a"); a.href = URL.createObjectURL(blob); a.download="census_report.csv"; a.click();
+};
+
+// Init
+fetchAllData();
+</script>
+</body>
+</html>

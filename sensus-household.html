@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Census Step 2</title>
+<link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-900:#002C5F;
+  --navy-800:#003A73;
+  --accent-red:#e63946;
+  --green:#00A99D;
+  --light-brown:#7EDDD3;
+  --white:#ffffff;
+  --shadow:0 10px 25px rgba(0,44,95,0.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Uber Move',sans-serif;
+  min-height:100vh; display:flex; justify-content:center; align-items:flex-start;
+  background: linear-gradient(135deg,#14243d,#0b1320);
+  padding:20px; color:var(--white);
+}
+
+.container{
+  width:100%; max-width:520px; padding:30px 20px; background:var(--light-brown);
+  border-radius:16px; box-shadow:var(--shadow); position:relative;
+}
+
+h1.section-title{
+  text-align:center; margin-bottom:25px; font-size:22px; font-weight:800; color:var(--navy-900);
+}
+
+.icon-label { font-size:1.5rem; margin-right:6px; vertical-align:middle; }
+
+.home-btn{
+  position:absolute; top:15px; right:15px; width:36px; height:36px; border-radius:12px;
+  background:var(--navy-800); color:#fff; border:none; font-size:18px; cursor:pointer; display:grid; place-items:center;
+}
+.home-btn:hover{opacity:0.9;}
+
+.section-subtitle{
+  font-weight:700; font-size:16px; margin:20px 0 12px; color:var(--navy-900);
+  border-left:4px solid var(--navy-900); padding-left:8px;
+}
+
+.form-group{margin-bottom:14px; display:flex; flex-direction:column;}
+label{display:block; font-size:13px; margin-bottom:6px; color:#002C5F; font-weight:700;}
+input{
+  width:100%; padding:12px; border-radius:10px; border:1px solid #ccc;
+  background:#fff; color:#111; font-size:1rem;
+}
+input:focus{outline:none; border-color:var(--navy-900);}
+
+button.btn{
+  width:100%; padding:14px; margin-top:12px; border:none; border-radius:12px;
+  background:linear-gradient(90deg,var(--accent-red),var(--navy-800)); color:#fff; font-weight:800; cursor:pointer;
+  box-shadow:var(--shadow);
+}
+button.btn:hover{opacity:0.9;}
+button.btn:disabled{background:#ccc; cursor:not-allowed; box-shadow:none;}
+
+button.btn-secondary{
+  width:100%; padding:14px; margin-top:10px; border:none; border-radius:12px;
+  background:#e5e5e5; color:#111; font-weight:700; cursor:pointer; box-shadow:var(--shadow);
+}
+button.btn-secondary:hover{background:#d2b48c;}
+
+.toast{
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background: var(--navy-800); color: #fff; padding: 14px 20px; border-radius: 12px;
+  font-weight: 600; box-shadow: var(--shadow); opacity: 0; transition: all 0.4s ease; z-index: 9999;
+}
+.toast.show { opacity: 1; }
+
+@media(max-width:480px){
+  .container{padding:20px;}
+  h1.section-title{font-size:20px;}
+  .section-subtitle{font-size:15px;}
+  input{padding:10px;}
+  button.btn, button.btn-secondary{padding:12px;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <button class="home-btn" onclick="window.location.href='index.html'">🏠</button>
+  <h1 class="section-title">🐐🐓 Goat, Chicken & Health Info</h1>
+
+  <div id="censusForm">
+    <div class="section-subtitle">🐐 Goat Information</div>
+    <div class="form-group"><label>Total Goats *</label><input type="number" id="goats"/></div>
+    <div class="form-group"><label>Goats Used (last 6 months) *</label><input type="number" id="goatsUsed"/></div>
+    <div class="form-group"><label>Goats Sold (last 6 months) *</label><input type="number" id="goatsSold"/></div>
+    <div class="form-group"><label>Stolen Goats *</label><input type="number" id="goatsStolen"/></div>
+    <div class="form-group"><label>Died Goats *</label><input type="number" id="goatsDied"/></div>
+    <div class="form-group"><label>Kids Born (last 3 months) *</label><input type="number" id="kidsBorn"/></div>
+    <div class="form-group"><label>Kids Survived (last 3 months) *</label><input type="number" id="kidsSurvived"/></div>
+
+    <div class="section-subtitle">🐓 Chicken Information</div>
+    <div class="form-group"><label>Total Chickens *</label><input type="number" id="chickens"/></div>
+    <div class="form-group"><label>Chickens Used (last 6 months) *</label><input type="number" id="chickensUsed"/></div>
+    <div class="form-group"><label>Chickens Sold (last 6 months) *</label><input type="number" id="chickensSold"/></div>
+    <div class="form-group"><label>Stolen Chickens *</label><input type="number" id="chickensStolen"/></div>
+    <div class="form-group"><label>Died Chickens *</label><input type="number" id="chickensDied"/></div>
+
+    <div class="section-subtitle">🧬 Health, Feed & Medication</div>
+    <div class="form-group"><label>Diseases vaccinated for</label><input type="text" id="goatDiseases"/></div>
+    <div class="form-group"><label>Medicines available</label><input type="text" id="vaccinated"/></div>
+    <div class="form-group"><label>3 diseases that kill goats</label><input type="text" id="medicines"/></div>
+    <div class="form-group"><label>Livestock feed</label><input type="text" id="feed"/></div>
+
+    <button id="saveBtn" class="btn" onclick="saveFinalCensus()">💾 Save & Finish</button>
+    <button class="btn btn-secondary" onclick="goBack()">⬅ Back</button>
+    <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+  authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+  projectId: "hpsa-app-6b2d2",
+  storageBucket: "hpsa-app-6b2d2.appspot.com",
+  messagingSenderId: "445389782453",
+  appId: "1:445389782453:web:595647fa1038fab9886dfc"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const fieldLabels = {
+  goats:"Total Goats", goatsUsed:"Goats Used", goatsSold:"Goats Sold", goatsStolen:"Stolen Goats", goatsDied:"Died Goats",
+  kidsBorn:"Kids Born", kidsSurvived:"Kids Survived", chickens:"Total Chickens", chickensUsed:"Chickens Used",
+  chickensSold:"Chickens Sold", chickensStolen:"Stolen Chickens", chickensDied:"Died Chickens",
+  goatDiseases:"Diseases vaccinated for", vaccinated:"Medicines available", medicines:"3 diseases that kill goats", feed:"Livestock feed"
+};
+
+function showToast(msg, callback){
+  const toast = document.getElementById("toast");
+  toast.textContent = msg; 
+  toast.classList.add("show");
+  setTimeout(()=>{
+    toast.classList.remove("show");
+    if(callback) callback();
+  },2500);
+}
+
+window.saveFinalCensus = async function () {
+  const numericFields = [
+    "goats","goatsUsed","goatsSold","goatsStolen","goatsDied",
+    "kidsBorn","kidsSurvived","chickens","chickensUsed","chickensSold",
+    "chickensStolen","chickensDied"
+  ];
+  const textFields = ["goatDiseases","vaccinated","medicines","feed"];
+
+  // Validation
+  for (let id of numericFields) {
+    const value = document.getElementById(id).value.trim();
+    if(value === "" || isNaN(value) || !Number.isInteger(Number(value))){
+      showToast(`⚠️ Please enter a valid number for ${fieldLabels[id]}`);
+      return;
+    }
+  }
+  for (let id of textFields) {
+    const value = document.getElementById(id).value.trim();
+    if(value === ""){
+      showToast(`⚠️ Please fill in ${fieldLabels[id]}`);
+      return;
+    }
+  }
+
+  const step2 = {};
+  numericFields.forEach(id=>step2[id]=Number(document.getElementById(id).value));
+  textFields.forEach(id=>step2[id]=document.getElementById(id).value.trim());
+  step2.createdAt = new Date().toISOString();
+
+  const step1 = JSON.parse(localStorage.getItem("censusUserProfile")||"{}");
+  const fullEntry = {...step1,...step2};
+
+  document.getElementById("saveBtn").disabled = true;
+
+  if(navigator.onLine){
+    try{
+      await addDoc(collection(db,"census-report"), fullEntry);
+
+      showToast("✅ Data saved online", resetInputs);
+    }catch(err){
+      console.error(err);
+      saveOffline(fullEntry);
+    }
+  }else{
+    saveOffline(fullEntry);
+  }
+
+  document.getElementById("saveBtn").disabled = false;
+};
+
+// Offline save
+function saveOffline(entry){
+  const offlineData = JSON.parse(localStorage.getItem("offlinesensusData")||"[]");
+  offlineData.push(entry);
+  localStorage.setItem("offlinesensusData",JSON.stringify(offlineData));
+  showToast("💾 Saved offline. Will sync when online.", resetInputs);
+}
+
+// Auto-sync offline data
+window.addEventListener("online", async () => {
+  const offlineData = JSON.parse(localStorage.getItem("offlinesensusData")||"[]");
+  if(!offlineData.length) return;
+  for(const entry of offlineData){
+    try{ await addDoc(collection(db,"sensusData"), entry); }
+    catch(e){ console.error("Failed to sync:", e); return; }
+  }
+  localStorage.removeItem("offlinesensusData");
+  showToast("✅ Offline data synced!");
+});
+
+function resetInputs(){
+  document.querySelectorAll("#censusForm input").forEach(i=>i.value="");
+}
+
+window.goBack = ()=>{window.location.href="sensus.html";};
+
+let logoutConfirmed = false;
+window.logout = () => {
+  if (!logoutConfirmed) {
+    logoutConfirmed = true;
+    showToast("⚠️ Tap again to confirm logout");
+    setTimeout(() => logoutConfirmed = false, 3000);
+  } else {
+    signOut(auth).catch(e => console.warn("Signout skipped", e));
+    localStorage.removeItem("censusUserProfile");
+    sessionStorage.clear();
+    showToast("👋 Logged out", () => window.location.href = "index.html");
+    logoutConfirmed = false;
+  }
+};
+</script>
+</body>
+</html>

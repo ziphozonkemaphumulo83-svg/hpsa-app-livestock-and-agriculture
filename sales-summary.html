@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Report Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-900:#002C5F;
+  --navy-800:#003A73;
+  --accent-red:#e63946;
+  --green:#00A99D;
+  --light-brown:#7EDDD3;
+  --white:#ffffff;
+  --shadow:0 10px 25px rgba(0,44,95,0.35);
+  --brand-color: #1e88e5; 
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Uber Move',sans-serif;
+  min-height:100vh; display:flex; justify-content:center; align-items:flex-start;
+  background: linear-gradient(135deg,#14243d,#0b1320);
+  padding:20px; color:var(--white);
+}
+.container{
+  width:100%; max-width:500px; padding:30px 20px; background:var(--light-brown);
+  border-radius:16px; box-shadow:var(--shadow); position:relative;
+}
+.toast {
+  position: fixed; bottom: 20px; left:50%; transform:translateX(-50%);
+  background: var(--navy-800); color: #fff; padding: 14px 20px; border-radius: 12px;
+  font-weight: 600; box-shadow: var(--shadow); opacity: 0; transition: all 0.4s ease; z-index: 9999;
+}
+.toast.show { opacity: 1; }
+.home-btn{
+  position:absolute; top:15px; right:15px; width:36px; height:36px; border-radius:12px;
+  background:var(--navy-800); color:#fff; border:none; font-size:18px; cursor:pointer; display:grid; place-items:center;
+}
+h1.section-title{ font-size:22px; font-weight:800; margin-bottom:25px; color:var(--navy-900); text-align:center; }
+.form-group{margin-bottom:14px;}
+label{display:block; font-size:13px; margin-bottom:6px; color:#002C5F; font-weight:700;}
+input, select{ width:100%; padding:12px; border-radius:10px; border:1px solid #ccc; background:#fff; color:#111; }
+input[readonly]{background:#e5e5e5; color:#666;}
+button.submit-btn{ width:100%; padding:14px; margin-top:10px; border:none; border-radius:12px; background:linear-gradient(90deg,var(--accent-red),var(--navy-800)); color:#fff; font-weight:800; cursor:pointer; }
+button.submit-btn:hover{opacity:0.9;}
+button.submit-btn:disabled{background:#ccc; cursor:not-allowed;}
+.summary{
+  margin-top:20px; display:grid; grid-template-columns:1fr 1fr; gap:10px;
+}
+.card-summary{
+  padding:12px; border-radius:12px; display:flex; flex-direction:column; align-items:center;
+  font-weight:700; box-shadow: var(--shadow);
+}
+.card-summary.goats{background:var(--navy-800); color:#fff;}
+.card-summary.chickens{background:var(--brand-color); color:#fff;}
+.card-summary.sales{background:var(--light-brown); color:var(--navy-900);}
+.card-summary.youth{background:var(--green); color:#fff;}
+.card-summary.cash{background:var(--navy-900); color:#fff;}
+.card-summary.machine{background:var(--brand-color); color:#fff;}
+.card-summary h3{margin:4px 0; font-size:14px;}
+.actions{ margin-top:20px; display:flex; justify-content:space-between; gap:10px; }
+.clear-btn,.logout-btn{
+  flex:1; padding:12px; border:none; border-radius:10px; font-weight:700; cursor:pointer; box-shadow:var(--shadow);
+}
+.clear-btn{background:var(--brand-color); color:#fff;}
+.clear-btn:hover{opacity:0.9;}
+.logout-btn{background:var(--accent-red); color:#fff;}
+.logout-btn:hover{opacity:0.9;}
+.offline-banner{
+  position:fixed; top:-50px; left:0; width:100%; background:var(--accent-red); color:#fff; text-align:center;
+  font-size:14px; font-weight:600; padding:10px 0; z-index:9999; transition:top .4s ease-in-out; box-shadow:0 4px 8px rgba(0,0,0,0.2);
+}
+.offline-banner.show{ top:0; }
+
+</style>
+</head>
+<body>
+
+<div id="offlineBanner" class="offline-banner">⚠️ You are offline. Some features may be unavailable.</div>
+<div id="toast" class="toast"></div>
+
+<div class="container">
+  <button class="home-btn" onclick="window.location.href='index.html'">🏠</button>
+  <h1 class="section-title">Sales Report Entry</h1>
+
+  <form id="summaryForm">
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="saleDate" required readonly />
+    </div>
+    <div class="form-group">
+      <label>Farmer Name</label>
+      <input type="text" id="farmerName" required />
+    </div>
+    <div class="form-group">
+      <label>Project Code</label>
+      <input type="text" id="projectCode" required />
+    </div>
+    <div class="form-group">
+      <label>Dip Tank</label>
+      <input type="text" id="dipTank" required />
+    </div>
+    <div class="form-group">
+      <label>Animal Type</label>
+      <select id="animalType" required>
+        <option value="">Select</option>
+        <option value="goat">Goat 🐐</option>
+        <option value="chicken">Chicken 🐓</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Number of Animals</label>
+      <input type="number" id="animalCount" required min="1" />
+    </div>
+    <div class="form-group">
+      <label>Amount (Rands)</label>
+      <input type="number" id="totalAmount" required min="0" step="0.01"/>
+    </div>
+    <div class="form-group">
+      <label>Youth Payment (Rands)</label>
+      <input type="number" id="youthPayment" required min="0" step="0.01"/>
+    </div>
+    <div class="form-group">
+      <label>Payment Method</label>
+      <select id="paymentMethod" required>
+        <option value="">Select</option>
+        <option value="cash">Cash 💵</option>
+        <option value="machine">Machine 📥️</option>
+      </select>
+    </div>
+    <button type="submit" class="submit-btn">Submit Sale</button>
+  </form>
+
+  <div class="summary">
+    <div class="card-summary goats">🐐<h3>Total Goats: <span id="totalGoats">0</span></h3></div>
+    <div class="card-summary chickens">🐓<h3>Total Chickens: <span id="totalChickens">0</span></h3></div>
+    <div class="card-summary sales">💰<h3>Total Sales: R<span id="totalSales">0.00</span></h3></div>
+    <div class="card-summary youth">🧒<h3>Youth Payments: R<span id="totalYouth">0.00</span></h3></div>
+    <div class="card-summary cash">💵<h3>Cash: R<span id="cashTotal">0.00</span></h3></div>
+    <div class="card-summary machine">📥<h3>Machine: R<span id="machineTotal">0.00</span></h3></div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="clear-btn" id="clearBtn">Clear Form</button>
+    <button type="button" class="logout-btn" id="logoutBtn">Logout</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getFirestore, collection, addDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+  authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+  projectId: "hpsa-app-6b2d2",
+  storageBucket: "hpsa-app-6b2d2.appspot.com",
+  messagingSenderId: "445389782453",
+  appId: "1:445389782453:web:595647fa1038fab9886dfc"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+enableIndexedDbPersistence(db).catch(e=>console.warn("Persistence error:", e.code));
+const auth = getAuth(app);
+
+const summaryForm = document.getElementById("summaryForm");
+const saleDate = document.getElementById("saleDate");
+const projectCode = document.getElementById("projectCode");
+const offlineBanner = document.getElementById("offlineBanner");
+const toastEl = document.getElementById("toast");
+
+const elTotalGoats = document.getElementById("totalGoats");
+const elTotalChickens = document.getElementById("totalChickens");
+const elTotalSales = document.getElementById("totalSales");
+const elTotalYouth = document.getElementById("totalYouth");
+const elCashTotal = document.getElementById("cashTotal");
+const elMachineTotal = document.getElementById("machineTotal");
+
+function toRand(n){ return (Math.round((n||0)*100)/100).toFixed(2); }
+function todayISO(){ return new Date().toISOString().split("T")[0]; }
+saleDate.value = todayISO();
+
+onAuthStateChanged(auth, user=>{
+  if(user){
+    const storedPC = localStorage.getItem("projectCode");
+    if(storedPC) projectCode.value = storedPC;  // editable, not locked
+  } else {
+    window.location.href="index.html";
+  }
+});
+
+function updateOnlineStatus(){
+  if(navigator.onLine) offlineBanner.classList.remove("show");
+  else offlineBanner.classList.add("show");
+}
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+updateOnlineStatus();
+
+function showToast(msg){
+  toastEl.textContent=msg;
+  toastEl.classList.add("show");
+  setTimeout(()=>{ toastEl.classList.remove("show"); }, 2500);
+}
+
+// Offline storage
+function saveOfflineSale(sale){
+  const offlineSales = JSON.parse(localStorage.getItem("offlineSales")||"[]");
+  offlineSales.push(sale);
+  localStorage.setItem("offlineSales", JSON.stringify(offlineSales));
+  showToast("💾 Saved offline. Will sync when online.");
+}
+
+// Submit sale
+async function submitSale(sale){
+  if(navigator.onLine){
+    try{
+      await addDoc(collection(db,"sales-report"), sale);
+      showToast("✅ Sale submitted!");
+    }catch(e){
+      console.warn(e);
+      saveOfflineSale(sale);
+    }
+  }else saveOfflineSale(sale);
+}
+
+// Form submission
+// Form submission
+summaryForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = document.getElementById("farmerName").value.trim();
+  const dip = document.getElementById("dipTank").value.trim();
+  const animalType = document.getElementById("animalType").value;
+  const count = parseInt(document.getElementById("animalCount").value);
+  const amount = parseFloat(document.getElementById("totalAmount").value);
+  const youth = parseFloat(document.getElementById("youthPayment").value);
+  const method = document.getElementById("paymentMethod").value;
+
+  if (!name || !dip || !animalType || !count || count <= 0 || isNaN(amount) || isNaN(youth) || !method) {
+    showToast("⚠️ Please fill all fields correctly");
+    return;
+  }
+
+  const sale = {
+    date: saleDate.value,
+    name,
+    projectCode: projectCode.value.trim(),
+    dipTank: dip,
+    animalType,
+    count,
+    amount,
+    youthPayment: youth,
+    method,
+    timestamp: new Date().toISOString()
+  };
+
+  // Update summary
+  if (animalType === "goat") elTotalGoats.textContent = (parseInt(elTotalGoats.textContent) + count);
+  else elTotalChickens.textContent = (parseInt(elTotalChickens.textContent) + count);
+
+  elTotalSales.textContent = toRand(parseFloat(elTotalSales.textContent) + amount);
+  elTotalYouth.textContent = toRand(parseFloat(elTotalYouth.textContent) + youth);
+
+  if (method === "cash") elCashTotal.textContent = toRand(parseFloat(elCashTotal.textContent) + amount);
+  else elMachineTotal.textContent = toRand(parseFloat(elMachineTotal.textContent) + amount);
+
+  // 🔥 Save to Firestore (or offline fallback)
+  await submitSale(sale);
+
+  // Reset form but keep date
+  summaryForm.reset();
+  saleDate.value = todayISO();
+});
+
+// Clear
+document.getElementById("clearBtn").addEventListener("click", ()=>{
+  const pc = projectCode.value;
+  summaryForm.reset();
+  saleDate.value=todayISO();
+  lockProjectCode(pc);
+});
+
+// Logout
+let logoutConfirmed=false;
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  if(!logoutConfirmed){
+    logoutConfirmed=true;
+    showToast("⚠️ Tap again to confirm logout");
+    setTimeout(()=>logoutConfirmed=false,3000);
+  }else confirmLogout();
+});
+async function confirmLogout(){
+  try{ await signOut(auth);}catch(e){console.warn(e);}
+  localStorage.clear();
+  window.location.href="index.html";
+}
+window.confirmLogout = confirmLogout;
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Training Manual - HPSA App</title>
+<link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy-900:#002C5F; 
+  --navy-800:#003A73; 
+  --brand-color:#1e88e5;
+  --green:#00A99D;
+  --white:#ffffff; 
+  --shadow:0 10px 25px rgba(0,44,95,0.35);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Uber Move', sans-serif;
+  background: linear-gradient(135deg,#14243d,#0b1320);
+  color: var(--white);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.app-shell {
+  width: 100%;
+  max-width: 480px;
+  background: var(--navy-900);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 85vh;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.home-btn {
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  background: var(--navy-800);
+  display: grid; place-items: center;
+  cursor: pointer;
+  font-size: 20px; 
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+  transition: 0.2s;
+}
+.home-btn:hover { background: var(--green); }
+.title {
+  font-size: 20px;
+  font-weight: 700;
+}
+.manual-container {
+  flex: 1;
+  background: var(--white);
+  border-radius: 20px;
+  padding: 22px;
+  color: #222;
+  overflow-y: auto;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.05);
+}
+.manual-container h2 {
+  margin-top: 18px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+.manual-container p {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+.manual-container ul {
+  margin-top: 8px;
+  padding-left: 18px;
+}
+.manual-container li {
+  margin-bottom: 6px;
+  font-size: 15px;
+}
+.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  background: var(--navy-800);
+  color: var(--white);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s;
+}
+.back-link:hover { background: var(--green); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="header">
+    <div class="home-btn" onclick="goHome()">🏠</div>
+    <div class="title">Training Manual</div>
+    <div style="width:44px"></div>
+  </div>
+
+  <div class="manual-container">
+    <p>Welcome to the HPSA App training manual. This guide helps you understand how to use the app effectively.</p>
+
+    <h2>1. Logging In</h2>
+    <p>Select the desired report card from the home screen. Project codes are handled internally by the app for authorized access.</p>
+
+    <h2>2. Offline Mode</h2>
+    <p>The app works offline. Your entries are stored locally and synced automatically when you reconnect to the internet.</p>
+
+    <h2>3. Navigation</h2>
+    <p>Use the home page cards to access reports and resources. Click <strong>Training Manual</strong> anytime for help.</p>
+
+    <h2>4. Support</h2>
+    <p>If you encounter any issues, contact the HPSA support team for assistance.</p>
+
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </div>
+</div>
+
+<script>
+function goHome() {
+  window.location.href = "index.html";
+}
+</script>
+</body>
+</html>

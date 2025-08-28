@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Sales Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#14243d; --navy-light:#1e3358; --blue-accent:#2e4d7b;
+  --cream:#f5f4f0; --shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+body{
+  font-family:'Uber Move',sans-serif; min-height:100vh;
+  background: linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 60%,var(--cream) 100%);
+  display:flex; justify-content:center; padding:16px; color:#111;
+}
+.container{
+  width:100%; max-width:480px; padding:24px 18px;
+  background:var(--cream); border-radius:20px; box-shadow:var(--shadow);
+  margin-top:60px;
+}
+h1{ text-align:center; margin-bottom:20px; color:var(--navy); font-size:22px; font-weight:800; }
+.filters,.actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px; }
+button{
+  cursor:pointer; padding:10px 14px; border:none; border-radius:12px;
+  font-weight:700; background:var(--navy); color:#fff; transition:0.2s; font-size:14px;
+}
+button:hover{ background:var(--blue-accent); }
+.kpi-container{ display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:12px; margin-bottom:16px; }
+.kpi{ background:var(--navy-light); color:#fff; padding:14px; border-radius:16px; box-shadow:var(--shadow); text-align:center; }
+.kpi h3{ margin:0; font-size:13px; font-weight:600; }
+.kpi p{ margin:6px 0 0; font-size:17px; font-weight:800; }
+.summary-statement{
+  background:#f7f7f7; padding:14px; margin:10px 0;
+  border-left:4px solid var(--navy); border-radius:12px;
+  font-size:0.9rem; color:#333; line-height:1.5;
+}
+.toast{
+  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+  background:var(--navy); color:#fff; padding:10px 18px; border-radius:12px;
+  font-weight:700; display:none; z-index:9999; font-size:14px;
+}
+#offlineBanner{ position:fixed; top:0; left:0; width:100%;
+  background:#d62828; color:#fff; text-align:center; padding:10px;
+  font-weight:bold; display:none; z-index:2000;
+}
+.modal-overlay{ display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000;
+}
+.modal-content{
+  background:var(--cream); padding:18px; border-radius:16px;
+  width:90%; max-width:300px; text-align:center; box-shadow:var(--shadow);
+}
+.modal-content input{ width:100%; padding:10px; margin:10px 0; border-radius:10px; border:1px solid #ccc; }
+.modal-content button{ width:45%; margin:5px; font-size:14px; }
+.modal-content button.cancel{ background:#d62828; color:#fff; }
+</style>
+</head>
+<body>
+
+<div id="offlineBanner">⚠️ You are offline. Data may be outdated.</div>
+
+<div class="container">
+  <h1>📊 Sales Report</h1>
+  <div class="filters">
+    <button id="btnFilterDip">Filter by Dip Tank</button>
+    <button id="btnFilterFarmer">Filter by Farmer</button>
+    <button id="btnResetFilter">Reset Filter</button>
+  </div>
+
+  <div id="summaryBlock" class="kpi-container"></div>
+  <div id="summaryText" class="summary-statement"></div>
+
+  <div class="actions">
+    <button id="btnExportCSV">📁 Export CSV</button>
+    <button id="btnLogout">🚪 Logout</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="filterModal" class="modal-overlay">
+  <div class="modal-content">
+    <div id="modalLabel">Enter Filter</div>
+    <input type="text" id="filterInput" placeholder="Type value..."/>
+    <div>
+      <button id="btnApplyFilter">Apply</button>
+      <button id="btnCancelFilter" class="cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCaOrMKZXZtJKD646bARehuTOxCe4DzsLk",
+  authDomain: "hpsa-app-6b2d2.firebaseapp.com",
+  projectId: "hpsa-app-6b2d2",
+  storageBucket: "hpsa-app-6b2d2.appspot.com",
+  messagingSenderId: "445389782453",
+  appId: "1:445389782453:web:595647fa1038fab9886dfc"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+db.enablePersistence().catch(()=>console.warn("Offline persistence failed"));
+
+let currentUser=null, currentField="", currentData=[];
+const toast=document.getElementById("toast");
+const offlineBanner=document.getElementById("offlineBanner");
+
+function showToast(msg){
+  toast.textContent=msg;
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",3000);
+}
+
+window.addEventListener("offline",()=>offlineBanner.style.display="block");
+window.addEventListener("online",()=>{ offlineBanner.style.display="none"; showToast("✅ Back online!"); });
+
+// Auth check
+auth.onAuthStateChanged(user=>{
+  if(!user) return location.href="index.html";
+  currentUser = user;
+  fetchData();
+});
+
+// Fetch only documents where uid matches current user
+async function fetchData(){
+  try{
+    const snap = await db.collection("sales-report")
+      .where("uid","==",currentUser.uid)
+      .get();
+
+    if(snap.empty){
+      showToast("No data found");
+      currentData=[];
+      showKPIs([]);
+      return;
+    }
+
+    currentData = snap.docs.map(d=>d.data());
+    showKPIs(currentData);
+  } catch(e){
+    console.error(e);
+    showToast("Failed to load data. Check Firestore rules.");
+  }
+}
+
+function showKPIs(data){
+  const block = document.getElementById("summaryBlock");
+  const text = document.getElementById("summaryText");
+  if(!data.length){
+    block.innerHTML = "<p>No data available.</p>";
+    text.innerHTML = "";
+    return;
+  }
+
+  let goats=0,chickens=0,total=0,youth=0,cash=0,machine=0;
+  const farmers = new Set();
+
+  data.forEach(e=>{
+    const type = (e.animalType||"").toLowerCase();
+    const method = (e.method||"").toLowerCase();
+    if(type==="goat") goats+=+e.count||0;
+    if(type==="chicken") chickens+=+e.count||0;
+    total+=+e.amount||0;
+    youth+=+e.youthPayment||0;
+    if(method==="cash") cash+=+e.amount||0;
+    if(method==="machine") machine+=+e.amount||0;
+    if(e.name) farmers.add(e.name);
+  });
+
+  const avg = farmers.size ? (total/farmers.size).toFixed(2) : "0.00";
+
+  block.innerHTML = `
+    <div class="kpi"><h3>🐐 Goats</h3><p>${goats}</p></div>
+    <div class="kpi"><h3>🐓 Chickens</h3><p>${chickens}</p></div>
+    <div class="kpi"><h3>💰 Total</h3><p>R${total.toFixed(2)}</p></div>
+    <div class="kpi"><h3>🧒 Youth</h3><p>R${youth.toFixed(2)}</p></div>
+    <div class="kpi"><h3>💵 Cash</h3><p>R${cash.toFixed(2)}</p></div>
+    <div class="kpi"><h3>🖥️ Machine</h3><p>R${machine.toFixed(2)}</p></div>
+    <div class="kpi"><h3>👥 Farmers</h3><p>${farmers.size}</p></div>
+    <div class="kpi"><h3>📊 Avg/Farmer</h3><p>R${avg}</p></div>
+  `;
+
+  text.innerHTML = `Summary: ${goats} goats and ${chickens} chickens sold. Total <strong>R${total.toFixed(2)}</strong>, Youth <strong>R${youth.toFixed(2)}</strong>, Cash <strong>R${cash.toFixed(2)}</strong>, Machine <strong>R${machine.toFixed(2)}</strong>, ${farmers.size} farmers involved.`;
+}
+
+function openModal(label,field){
+  currentField=field;
+  document.getElementById("modalLabel").textContent=`Enter ${label}`;
+  document.getElementById("filterInput").value="";
+  document.getElementById("filterModal").style.display="flex";
+}
+function closeModal(){ document.getElementById("filterModal").style.display="none"; }
+function submitFilter(){
+  const val=document.getElementById("filterInput").value.trim().toLowerCase();
+  closeModal();
+  if(!val) return showToast("No value entered");
+  const filtered = currentData.filter(item=>(item[currentField]||"").toString().toLowerCase()===val);
+  showKPIs(filtered);
+}
+
+async function exportCSV(){
+  if(!currentData.length) return showToast("No data to export");
+  const keys=[...new Set(currentData.flatMap(d=>Object.keys(d)))];
+  const csv=[keys.join(","),...currentData.map(d=>keys.map(k=>`"${(d[k]||"").toString().replace(/"/g,'""')}"`).join(","))].join("\n");
+  const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="sales_report.csv"; a.click();
+}
+
+function logout(){ auth.signOut().then(()=>location.href="index.html"); }
+
+window.addEventListener("DOMContentLoaded",()=>{
+  document.getElementById("btnFilterDip").addEventListener("click",()=>openModal("Dip Tank","dipTank"));
+  document.getElementById("btnFilterFarmer").addEventListener("click",()=>openModal("Farmer","name"));
+  document.getElementById("btnResetFilter").addEventListener("click",fetchData);
+  document.getElementById("btnApplyFilter").addEventListener("click",submitFilter);
+  document.getElementById("btnCancelFilter").addEventListener("click",closeModal);
+  document.getElementById("btnExportCSV").addEventListener("click",exportCSV);
+  document.getElementById("btnLogout").addEventListener("click",logout);
+});
+</script>
+</body>
+</html>
