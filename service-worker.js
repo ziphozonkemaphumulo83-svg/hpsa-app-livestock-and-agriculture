@@ -1,62 +1,40 @@
-// service-worker.js
-// PWA Offline Service Worker
+const CACHE_NAME = "hpsa-app-cache-v1";
+const OFFLINE_PAGE = "offline.html";
 
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
-
-const CACHE = "hpsa-cache-v1";
-const offlineFallbackPage = "offline.html";
-
-// Listen for skip waiting messages
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
-
-// Install event – cache offline fallback + key pages
+// Install event: cache assets
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => {
+    caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
-        "/",                       // root
         "/index.html",
-        "/sales-summary.html",
-        "/sensus.html",
-        "/sensus-household.html",
         "/offline.html",
-        "/manifest.json",
-        "/images/icon-192.png",
-        "/images/icon-512.png"
+        "/styles.css",
+        "/main.js",
+        "/icons/icon-192x192.png",
+        "/icons/icon-512x512.png"
       ]);
     })
   );
 });
 
-// Enable navigation preload if supported
-if (workbox.navigationPreload.isSupported()) {
-  workbox.navigationPreload.enable();
-}
+// Activate event: clean old caches
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
+  );
+});
 
-// Fetch event – try network, fall back to cache, then offline page
+// Fetch: serve cached or offline
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
-    event.respondWith(
-      (async () => {
-        try {
-          // Use preload response if available
-          const preloadResp = await event.preloadResponse;
-          if (preloadResp) return preloadResp;
-
-          // Try network request
-          const networkResp = await fetch(event.request);
-          return networkResp;
-        } catch (error) {
-          // Fallback to cache or offline page
-          const cache = await caches.open(CACHE);
-          const cachedResp = await cache.match(event.request);
-          return cachedResp || cache.match(offlineFallbackPage);
-        }
-      })()
-    );
-  }
+  event.respondWith(
+    fetch(event.request).catch(() =>
+      caches.match(event.request).then((response) => response || caches.match(OFFLINE_PAGE))
+    )
+  );
 });

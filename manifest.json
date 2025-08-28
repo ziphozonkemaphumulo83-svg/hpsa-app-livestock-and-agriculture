@@ -2,73 +2,22 @@
   "name": "HPSA App",
   "short_name": "HPSA",
   "description": "HPSA Livestock and Agriculture App",
-  "id": "/index.html",                     // ✅ App ID
+  "id": "/index.html",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#002b5b",
   "orientation": "portrait-primary",
-
-  // ✅ Launch handler for advanced PWA navigation
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-
-  // ✅ Icons (yield result icon)
+  "dir": "ltr",
+  "lang": "en-US",
   "icons": [
-    {
-      "src": "/icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-
-  // ✅ Screenshots for app preview
-  "screenshots": [
-    {
-      "src": "/screenshots/screen1.png",
-      "sizes": "640x480",
-      "type": "image/png"
-    },
-    {
-      "src": "/screenshots/screen2.png",
-      "sizes": "640x480",
-      "type": "image/png"
-    }
+    {"src": "/icons/icon-72x72.png", "sizes": "72x72", "type": "image/png"},
+    {"src": "/icons/icon-96x96.png", "sizes": "96x96", "type": "image/png"},
+    {"src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png"},
+    {"src": "/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png"},
+    {"src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png"},
+    {"src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png"},
+    {"src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png"}
   ]
 }
