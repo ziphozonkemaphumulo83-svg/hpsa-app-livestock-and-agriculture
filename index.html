@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>HPSA App</title>
 <link href="https://fonts.googleapis.com/css2?family=Uber+Move:wght@400;700&display=swap" rel="stylesheet">
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- App Icons -->
+<link rel="icon" type="image/png" sizes="192x192" href="images/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="images/icon-512.png">
+
+<!-- Apple iOS Support -->
+<link rel="apple-touch-icon" sizes="192x192" href="images/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="images/icon-512.png">
+<meta name="theme-color" content="#002147">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <style>
 /* THEME */
 :root{
@@ -173,6 +186,7 @@ body{
 .fade-message {
   transition: opacity 1s ease;
 }
+
 
 </style>
 </head>
@@ -423,7 +437,7 @@ function openProjectModal(code){
         toast("✅ Access granted. Redirecting...");
         setTimeout(()=>{ 
           closeProjectModal(); 
-          window.location.href = code === "SALES-REPORT" ? "sales-summary.html" : "census-report.html"; 
+          window.location.href = code === "SALES-REPORT" ? "sales-summary.html" : "sensus-report.html"; 
         },800);
       } else {
         toast("❌ Not authorized for this report");
@@ -491,6 +505,15 @@ document.getElementById("resetBtn").addEventListener("click", async ()=>{
     show('login');
   }catch(err){ toast(err.message || "Reset failed"); }
 });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then((reg) => console.log("Service Worker registered:", reg.scope))
+        .catch((err) => console.log("Service Worker registration failed:", err));
+    });
+  }
 </script>
 </body>
 </html>
